@@ -2,6 +2,15 @@ SpaceShip ship = new SpaceShip();
 int screenSize = 600;
 Star[] stars = new Star[50];//your variable declarations here
 double gravity = 1.025;
+double maxSpeed = 0.25;
+int rotateSpeed = 5;
+boolean wPressed = false;
+boolean aPressed = false;
+boolean sPressed = false;
+boolean dPressed = false;
+boolean qPressed = false;
+boolean ePressed = false;
+
 public void setup() 
 {
   size(screenSize, screenSize);
@@ -16,6 +25,24 @@ public void draw()
   rect(-100, -100, screenSize+100, screenSize+100);
   for (int i = 0; i < stars.length; i++) {
     stars[i].show();
+  }
+  if (wPressed) {
+    ship.accelerate(maxSpeed,0);
+  }
+  if (sPressed) {
+    ship.accelerate(-maxSpeed,0);
+  }
+  if (qPressed) {
+    ship.accelerate(maxSpeed/2,-90);
+  }
+  if (ePressed) {
+    ship.accelerate(maxSpeed/2,90);
+  }
+  if (dPressed) {
+    ship.rotate(rotateSpeed);
+  }
+  if (aPressed) {
+    ship.rotate(-rotateSpeed);
   }
   ship.show();
   ship.move();
@@ -164,24 +191,23 @@ class Star
 
 public void keyPressed() 
 {
-  double maxSpeed = 1;
   if (keyCode == 'W') {
-    ship.accelerate(maxSpeed,0);
+    wPressed = true;
   }
   if (keyCode == 'S') {
-    ship.accelerate(-maxSpeed,0);
+    sPressed = true;
   }
   if (keyCode == 'Q') {
-    ship.accelerate(maxSpeed/2,-90);
+    qPressed = true;
   }
   if (keyCode == 'E') {
-    ship.accelerate(maxSpeed/2,90);
+    ePressed = true;
   }
   if (keyCode == 'D') {
-    ship.rotate(10);
+    dPressed = true;
   }
   if (keyCode == 'A') {
-    ship.rotate(-10);
+    aPressed = true;
   }
   if (keyCode == ' ') {
     ship.setX((int)(Math.random()*screenSize));
@@ -189,5 +215,26 @@ public void keyPressed()
     ship.myDirectionX = 0;
     ship.myDirectionY = 0;
     ship.setPointDirection((int)(Math.random()*360));
+  }
+}
+
+public void keyReleased() {
+  if (keyCode == 'W') {
+    wPressed = false;
+  }
+  if (keyCode == 'S') {
+    sPressed = false;
+  }
+  if (keyCode == 'Q') {
+    qPressed = false;
+  }
+  if (keyCode == 'E') {
+    ePressed = false;
+  }
+  if (keyCode == 'D') {
+    dPressed = false;
+  }
+  if (keyCode == 'A') {
+    aPressed = false;
   }
 }
