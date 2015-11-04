@@ -1,7 +1,7 @@
 SpaceShip ship = new SpaceShip();
-int screenSize = 500;
+int screenSize = 600;
 Star[] stars = new Star[50];//your variable declarations here
-
+double gravity = 1.025;
 public void setup() 
 {
   size(screenSize, screenSize);
@@ -20,7 +20,7 @@ public void draw()
   ship.show();
   ship.move();
   stroke(255);
-  text((int)ship.myDirectionX+(int)ship.myDirectionY, 10,10);
+  text((int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 10,10);
 }
 
 class SpaceShip extends Floater  
@@ -36,8 +36,8 @@ class SpaceShip extends Floater
     xCorners[2] = -8;
     yCorners[2] = 8;
     myColor = 255;
-    myCenterX = screenSize/2;
-    myCenterY = screenSize/2;
+    myCenterX = 300;
+    myCenterY = 300;
     myDirectionX = 0;
     myDirectionY = 0;
     myPointDirection = 270;
@@ -75,10 +75,10 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
   abstract public double getPointDirection();
 
   //Accelerates the floater in the direction it is pointing (myPointDirection)   
-  public void accelerate (double dAmount)   
+  public void accelerate (double dAmount, double pAdd)   
   {          
     //convert the current direction the floater is pointing to radians    
-    double dRadians =myPointDirection*(Math.PI/180);     
+    double dRadians = (myPointDirection+pAdd)*(Math.PI/180);     
     //change coordinates of direction of travel    
     myDirectionX += ((dAmount) * Math.cos(dRadians));    
     myDirectionY += ((dAmount) * Math.sin(dRadians));             
@@ -93,18 +93,20 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     //change the x and y coordinates by myDirectionX and myDirectionY       
     myCenterX += myDirectionX;    
     myCenterY += myDirectionY;     
-    if (myDirectionX > 0) {
-      myDirectionX = myDirectionX/1.05;
+    /*if (myDirectionX > 0) {
+      myDirectionX = myDirectionX/gravity;
     }
     if (myDirectionY > 0) {
-      myDirectionY = myDirectionY/1.05;
+      myDirectionY = myDirectionY/gravity;
     }
     if (myDirectionX < 0) {
-      myDirectionX = myDirectionX/1.05;
+      myDirectionX = myDirectionX/gravity;
     }
     if (myDirectionY < 0) {
-      myDirectionY = myDirectionY/1.05;
-    }      
+      myDirectionY = myDirectionY/gravity;
+    }   */
+    myDirectionX = myDirectionX/gravity;
+    myDirectionY = myDirectionY/gravity; 
     //wrap around screen    
     if(myCenterX >width)
     {     
@@ -162,17 +164,23 @@ class Star
 
 public void keyPressed() 
 {
-  int maxSpeed = 5;
-  if (keyCode == UP) {
-    ship.accelerate(1);
+  double maxSpeed = 1;
+  if (keyCode == 'W') {
+    ship.accelerate(maxSpeed,0);
   }
-  if (keyCode == DOWN) {
-    ship.accelerate(1);
+  if (keyCode == 'S') {
+    ship.accelerate(-maxSpeed,0);
   }
-  if (keyCode == RIGHT) {
+  if (keyCode == 'Q') {
+    ship.accelerate(maxSpeed/2,-90);
+  }
+  if (keyCode == 'E') {
+    ship.accelerate(maxSpeed/2,90);
+  }
+  if (keyCode == 'D') {
     ship.rotate(10);
   }
-  if (keyCode == LEFT) {
+  if (keyCode == 'A') {
     ship.rotate(-10);
   }
   if (keyCode == ' ') {
