@@ -2,7 +2,7 @@ int screenSize = 600;
 SpaceShip ship = new SpaceShip(screenSize/2,screenSize/2);
 Star[] stars = new Star[50];//your variable declarations here
 double gravity = 1.025;
-double maxSpeed = 0.25;
+double maxSpeed = 0.15;
 int rotateSpeed = 5;
 double iX = ship.myCenterX;
 double iY = ship.myCenterY;
@@ -28,7 +28,7 @@ public void setup()
 
 public void draw() 
 {
-  fill(0,100);
+  fill((abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY))*10,100);
   rect(-100, -100, screenSize+100, screenSize+100);
   fill(50);
   rect(screenSize, 0, 100,screenSize);
@@ -39,6 +39,14 @@ public void draw()
     stars[i].show();
   }
   if (wPressed) {
+    double dRadians = (ship.myPointDirection)*(Math.PI/180);
+    fX += ((maxSpeed*100) * Math.cos(dRadians));    
+    fY += ((maxSpeed*100) * Math.sin(dRadians));
+    fill(255,0,0);
+    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    rotate((float)dRadians);
+    ellipse(-5,0.5, 20, 4);
+    resetMatrix();
     ship.accelerate(maxSpeed,0);
   }
   if (sPressed) {
@@ -60,9 +68,10 @@ public void draw()
     ship.myDirectionX = 0;
     ship.myDirectionY = 0;
     double dRadians = (ship.myPointDirection)*(Math.PI/180);
-    if (fX > 50 || fX < screenSize-50 || fY > 50 || fY < screenSize-50)
-    fX += ((maxSpeed*100) * Math.cos(dRadians));    
-    fY += ((maxSpeed*100) * Math.sin(dRadians));
+    if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
+      fX += ((maxSpeed*100) * Math.cos(dRadians));    
+      fY += ((maxSpeed*100) * Math.sin(dRadians));
+    }
     stroke(255,0,0);
     line((float)iX, (float)iY, (float)fX, (float)fY);
   }
@@ -81,7 +90,7 @@ public void draw()
   rect((float)(screenSize+15), 30, (float)hyperCoolAdd, 10);
   fill(255,0,0);
   noStroke();
-  rect((float)(screenSize+15),31,(float)hyperCool,9);
+  rect((float)(screenSize+16),31,(float)hyperCool,9);
 }
 
 class SpaceShip extends Floater  
@@ -92,12 +101,12 @@ class SpaceShip extends Floater
     corners = 3;
     xCorners = new int[corners];
     yCorners = new int[corners];
-    xCorners[0] = -3;
-    yCorners[0] = -3;
-    xCorners[1] = 6;
+    xCorners[0] = -4;
+    yCorners[0] = -4;
+    xCorners[1] = 8;
     yCorners[1] = 0;
-    xCorners[2] = -3;
-    yCorners[2] = 3;
+    xCorners[2] = -4;
+    yCorners[2] = 4;
     myColor = 255;
     myCenterX = x;
     myCenterY = y;
@@ -199,8 +208,8 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     for(int nI = 0; nI < corners; nI++)    
     {     
       //rotate and translate the coordinates of the floater using current direction 
-      xRotatedTranslated = (int)((xCorners[nI]* Math.cos(dRadians)) - (yCorners[nI] * Math.sin(dRadians))+myCenterX);     
-      yRotatedTranslated = (int)((xCorners[nI]* Math.sin(dRadians)) + (yCorners[nI] * Math.cos(dRadians))+myCenterY);      
+      xRotatedTranslated = (int)((xCorners[nI] * Math.cos(dRadians)) - (yCorners[nI] * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI] * Math.sin(dRadians)) + (yCorners[nI] * Math.cos(dRadians))+myCenterY);      
       vertex(xRotatedTranslated,yRotatedTranslated);    
     }   
     endShape(CLOSE);  
