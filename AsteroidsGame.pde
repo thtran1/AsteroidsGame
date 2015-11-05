@@ -1,15 +1,22 @@
-SpaceShip ship = new SpaceShip();
 int screenSize = 600;
+SpaceShip ship = new SpaceShip(screenSize/2,screenSize/2);
 Star[] stars = new Star[50];//your variable declarations here
 double gravity = 1.025;
 double maxSpeed = 0.25;
 int rotateSpeed = 5;
+double iX = ship.myCenterX;
+double iY = ship.myCenterY;
+double fX = iX;
+double fY = iY;
+double hyperCool = 0;
+double hyperCoolAdd = 50;
 boolean wPressed = false;
 boolean aPressed = false;
 boolean sPressed = false;
 boolean dPressed = false;
 boolean qPressed = false;
 boolean ePressed = false;
+boolean jPressed = false;
 
 public void setup() 
 {
@@ -23,6 +30,9 @@ public void draw()
 {
   fill(0,100);
   rect(-100, -100, screenSize+100, screenSize+100);
+  if (hyperCool > 0) {
+    hyperCool -= 0.5;
+  }
   for (int i = 0; i < stars.length; i++) {
     stars[i].show();
   }
@@ -38,21 +48,45 @@ public void draw()
   if (ePressed) {
     ship.accelerate(maxSpeed/2,90);
   }
-  if (dPressed) {
+  if (dPressed && !jPressed) {
     ship.rotate(rotateSpeed);
   }
-  if (aPressed) {
+  if (aPressed && !jPressed) {
     ship.rotate(-rotateSpeed);
+  }
+  if (jPressed) {
+    ship.myDirectionX = 0;
+    ship.myDirectionY = 0;
+    double dRadians = (ship.myPointDirection)*(Math.PI/180);
+    if (fX > 50 || fX < screenSize-50 || fY > 50 || fY < screenSize-50)
+    fX += ((maxSpeed*100) * Math.cos(dRadians));    
+    fY += ((maxSpeed*100) * Math.sin(dRadians));
+    stroke(255,0,0);
+    line((float)iX, (float)iY, (float)fX, (float)fY);
+  }
+  if (!jPressed) {
+    iX = ship.myCenterX;
+    iY = ship.myCenterY;
+    fX = iX;
+    fY = iY;
   }
   ship.show();
   ship.move();
-  stroke(255);
-  text((int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 10,10);
+  //stroke(255);
+  //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
+  text("Hyperspace:",10,10);
+  fill(0);
+  rect(20, 20, (float)hyperCoolAdd, 10);
+  fill(255,0,0);
+  noStroke();
+  rect(21,21,(float)hyperCool,9);
 }
 
 class SpaceShip extends Floater  
 {   
-  SpaceShip() {
+  double intX = screenSize;
+  double intY = screenSize;
+  SpaceShip(int x, int y) {
     corners = 3;
     xCorners = new int[corners];
     yCorners = new int[corners];
@@ -63,8 +97,8 @@ class SpaceShip extends Floater
     xCorners[2] = -8;
     yCorners[2] = 8;
     myColor = 255;
-    myCenterX = 300;
-    myCenterY = 300;
+    myCenterX = x;
+    myCenterY = y;
     myDirectionX = 0;
     myDirectionY = 0;
     myPointDirection = 270;
@@ -120,36 +154,36 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     //change the x and y coordinates by myDirectionX and myDirectionY       
     myCenterX += myDirectionX;    
     myCenterY += myDirectionY;     
-    /*if (myDirectionX > 0) {
-      myDirectionX = myDirectionX/gravity;
-    }
-    if (myDirectionY > 0) {
-      myDirectionY = myDirectionY/gravity;
-    }
-    if (myDirectionX < 0) {
-      myDirectionX = myDirectionX/gravity;
-    }
-    if (myDirectionY < 0) {
-      myDirectionY = myDirectionY/gravity;
-    }   */
     myDirectionX = myDirectionX/gravity;
     myDirectionY = myDirectionY/gravity; 
     //wrap around screen    
     if(myCenterX >width)
     {     
-      myCenterX = 0;    
+      myCenterX = 0;
+      for (int i = 0; i < stars.length; i++) {
+        stars[i] = new Star();
+      }    
     }    
     else if (myCenterX<0)
     {     
-      myCenterX = width;    
+      myCenterX = width;
+      for (int i = 0; i < stars.length; i++) {
+        stars[i] = new Star();
+      }        
     }    
     if(myCenterY >height)
     {    
-      myCenterY = 0;    
+      myCenterY = 0;
+      for (int i = 0; i < stars.length; i++) {
+        stars[i] = new Star();
+      }        
     }   
     else if (myCenterY < 0)
     {     
-      myCenterY = height;    
+      myCenterY = height;
+      for (int i = 0; i < stars.length; i++) {
+        stars[i] = new Star();
+      }        
     }   
   }   
   public void show ()  //Draws the floater at the current position  
@@ -191,10 +225,10 @@ class Star
 
 public void keyPressed() 
 {
-  if (keyCode == 'W') {
+  if (keyCode == 'W' || keyCode == UP) {
     wPressed = true;
   }
-  if (keyCode == 'S') {
+  if (keyCode == 'S' || keyCode == DOWN) {
     sPressed = true;
   }
   if (keyCode == 'Q') {
@@ -203,26 +237,22 @@ public void keyPressed()
   if (keyCode == 'E') {
     ePressed = true;
   }
-  if (keyCode == 'D') {
+  if (keyCode == 'D' || keyCode == RIGHT) {
     dPressed = true;
   }
-  if (keyCode == 'A') {
+  if (keyCode == 'A' || keyCode == LEFT) {
     aPressed = true;
   }
-  if (keyCode == ' ') {
-    ship.setX((int)(Math.random()*screenSize));
-    ship.setY((int)(Math.random()*screenSize));
-    ship.myDirectionX = 0;
-    ship.myDirectionY = 0;
-    ship.setPointDirection((int)(Math.random()*360));
+  if (keyCode == 'J' && (int)hyperCool == 0) {
+    jPressed = true;
   }
 }
 
 public void keyReleased() {
-  if (keyCode == 'W') {
+  if (keyCode == 'W' || keyCode == UP) {
     wPressed = false;
   }
-  if (keyCode == 'S') {
+  if (keyCode == 'S' || keyCode == DOWN) {
     sPressed = false;
   }
   if (keyCode == 'Q') {
@@ -231,10 +261,23 @@ public void keyReleased() {
   if (keyCode == 'E') {
     ePressed = false;
   }
-  if (keyCode == 'D') {
+  if (keyCode == 'D' || keyCode == RIGHT) {
     dPressed = false;
   }
-  if (keyCode == 'A') {
+  if (keyCode == 'A' || keyCode == LEFT) {
     aPressed = false;
+  }
+  if (keyCode == 'J' && (int)hyperCool == 0) {
+    jPressed = false;
+    fill(255);
+    ellipse((float)fX,(float)fY,100,100);
+    ship.myCenterX = fX;
+    ship.myCenterY = fY;
+    if ((int)hyperCool == 0) {
+      for (int i = 0; i < stars.length; i++) {
+        stars[i] = new Star();
+      }
+      hyperCool = hyperCoolAdd;
+    }
   }
 }
