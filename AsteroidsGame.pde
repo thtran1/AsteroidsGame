@@ -20,7 +20,7 @@ boolean jPressed = false;
 
 public void setup() 
 {
-  size(screenSize, screenSize);
+  size(700, 600);
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
   }
@@ -30,6 +30,8 @@ public void draw()
 {
   fill(0,100);
   rect(-100, -100, screenSize+100, screenSize+100);
+  fill(50);
+  rect(screenSize, 0, 100,screenSize);
   if (hyperCool > 0) {
     hyperCool -= 0.5;
   }
@@ -74,12 +76,12 @@ public void draw()
   ship.move();
   //stroke(255);
   //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
-  text("Hyperspace:",10,10);
+  text("Hyperspace:",screenSize+10,20);
   fill(0);
-  rect(20, 20, (float)hyperCoolAdd, 10);
+  rect((float)(screenSize+15), 30, (float)hyperCoolAdd, 10);
   fill(255,0,0);
   noStroke();
-  rect(21,21,(float)hyperCool,9);
+  rect((float)(screenSize+15),31,(float)hyperCool,9);
 }
 
 class SpaceShip extends Floater  
@@ -90,12 +92,12 @@ class SpaceShip extends Floater
     corners = 3;
     xCorners = new int[corners];
     yCorners = new int[corners];
-    xCorners[0] = -8;
-    yCorners[0] = -8;
-    xCorners[1] = 16;
+    xCorners[0] = -3;
+    yCorners[0] = -3;
+    xCorners[1] = 6;
     yCorners[1] = 0;
-    xCorners[2] = -8;
-    yCorners[2] = 8;
+    xCorners[2] = -3;
+    yCorners[2] = 3;
     myColor = 255;
     myCenterX = x;
     myCenterY = y;
@@ -157,7 +159,7 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     myDirectionX = myDirectionX/gravity;
     myDirectionY = myDirectionY/gravity; 
     //wrap around screen    
-    if(myCenterX >width)
+    if(myCenterX >screenSize)
     {     
       myCenterX = 0;
       for (int i = 0; i < stars.length; i++) {
@@ -166,12 +168,12 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     }    
     else if (myCenterX<0)
     {     
-      myCenterX = width;
+      myCenterX = screenSize;
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       }        
     }    
-    if(myCenterY >height)
+    if(myCenterY >screenSize)
     {    
       myCenterY = 0;
       for (int i = 0; i < stars.length; i++) {
@@ -180,7 +182,7 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     }   
     else if (myCenterY < 0)
     {     
-      myCenterY = height;
+      myCenterY = screenSize;
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       }        
