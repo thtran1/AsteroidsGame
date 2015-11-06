@@ -1,5 +1,5 @@
-int screenSize = 700;
-SpaceShip ship = new SpaceShip(screenSize/2,screenSize/2);
+int screenSize = 750;
+SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 Asteroid[] asteroid = new Asteroid[50];
 HyperJump hyperjump = new HyperJump();
 Speed speed = new Speed();
@@ -29,7 +29,7 @@ boolean jPressed = false;
 boolean asteroidCollision() 
 {
   for (int i = 0; i < asteroid.length; i++) {
-    float collisionDist = dist(ship.getX(),ship.getY(),asteroid[i].getX(),asteroid[i].getY());
+    float collisionDist = dist(ship.getX(), ship.getY(), asteroid[i].getX(), asteroid[i].getY());
     if (collisionDist < 10) {
       return true;
     }
@@ -39,7 +39,7 @@ boolean asteroidCollision()
 
 public void setup() 
 {
-  size(900, 700);
+  size(900, 750);
   screenSize = height;
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
@@ -59,51 +59,51 @@ public void draw()
   }
   if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed) {
     double dRadians = (ship.myPointDirection)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadians);
     ellipse(-7, -3, 10, 2);
     ellipse(-7, 3, 10, 2);
     resetMatrix();
-    ship.accelerate(maxTorque,0);
+    ship.accelerate(maxTorque, 0);
   }
   if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed) {
     double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
     double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansR);
     ellipse(1, 4, 10, 2);
     resetMatrix();
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansL);
     ellipse(1, -4, 10, 2);
     resetMatrix();
-    ship.accelerate(-maxTorque,0);
+    ship.accelerate(-maxTorque, 0);
   }
   if (qPressed) {
     double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansR);
     ellipse(5, -9, 10, 2);
     resetMatrix();
-    ship.accelerate(maxTorque/1.5,-90);
+    ship.accelerate(maxTorque/1.5, -90);
   }
   if (ePressed) {
     double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansL);
     ellipse(5, 9, 10, 2);
     resetMatrix();
-    ship.accelerate(maxTorque/1.5,90);
+    ship.accelerate(maxTorque/1.5, 90);
   }
   if (dPressed && !jPressed) {
     double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansL);
     ellipse(3, 20, 8, 2);
     resetMatrix();
@@ -111,8 +111,8 @@ public void draw()
   }
   if (aPressed && !jPressed) {
     double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-    fill(255,0,0);
-    translate((float)ship.myCenterX,(float)ship.myCenterY);
+    fill(255, 0, 0);
+    translate((float)ship.myCenterX, (float)ship.myCenterY);
     rotate((float)dRadiansR);
     ellipse(3, -20, 8, 2);
     resetMatrix();
@@ -126,7 +126,7 @@ public void draw()
       fX += ((maxTorque*100) * Math.cos(dRadians));    
       fY += ((maxTorque*100) * Math.sin(dRadians));
     }
-    stroke(0,0,255);
+    stroke(0, 0, 255);
     line((float)iX, (float)iY, (float)fX, (float)fY);
   }
   if (!jPressed) {
@@ -158,7 +158,7 @@ public void draw()
   }
   fill(50);
   noStroke();
-  rect(screenSize, 0, width-height,screenSize);
+  rect(screenSize, 0, width-height, screenSize);
   hyperjump.show();
   hyperjump.interaction();
   speed.show();
@@ -169,7 +169,7 @@ public void draw()
   fuel.interaction();
   map.show();
   fill(255);
-  text(areaX + " " + areaY,10,10);
+  text(areaX + " " + areaY, 10, 10);
   //stroke(255);
   //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
 }
@@ -214,7 +214,7 @@ class SpaceShip extends Floater
     yCorners[13] = 10;
     xCorners[14] = -5;
     yCorners[14] = 6;
-    myColor = color(150,150,250);
+    myColor = color(150, 150, 250);
     myCenterX = x;
     myCenterY = y;
     myDirectionX = 0;
@@ -228,12 +228,12 @@ class SpaceShip extends Floater
     double dRadians = (myPointDirection+pAdd)*(Math.PI/180);     
     //change coordinates of direction of travel    
     myDirectionX += ((dAmount) * Math.cos(dRadians));    
-    myDirectionY += ((dAmount) * Math.sin(dRadians));             
+    myDirectionY += ((dAmount) * Math.sin(dRadians));
   }   
   public void rotate (int dAmount)   
   {     
     //rotates the floater by a given number of degrees  
-    nDegreesOfRotation+=dAmount;  
+    nDegreesOfRotation+=dAmount;
   }   
   public void move ()   //move the floater in the current direction of travel
   {      
@@ -245,7 +245,7 @@ class SpaceShip extends Floater
     myDirectionX = myDirectionX/gravity;
     myDirectionY = myDirectionY/gravity; 
     //wrap around screen    
-    if(myCenterX>screenSize && areaX<areaSize+1)
+    if (myCenterX>screenSize && areaX<areaSize+1)
     {     
       areaX++;
       myCenterX = 0;
@@ -254,9 +254,8 @@ class SpaceShip extends Floater
       }   
       for (int i = 0; i < asteroid.length; i++) {
         asteroid[i].reset();
-    }
-    }    
-    else if (myCenterX<0 && areaX>-1)
+      }
+    } else if (myCenterX<0 && areaX>-1)
     {     
       areaX--;
       myCenterX = screenSize;
@@ -265,9 +264,9 @@ class SpaceShip extends Floater
       }
       for (int i = 0; i < asteroid.length; i++) {
         asteroid[i].reset();
-    }
+      }
     }    
-    if(myCenterY >screenSize && areaY<areaSize+1)
+    if (myCenterY >screenSize && areaY<areaSize+1)
     {    
       areaY++;
       myCenterY = 0;
@@ -276,9 +275,8 @@ class SpaceShip extends Floater
       } 
       for (int i = 0; i < asteroid.length; i++) {
         asteroid[i].reset();
-    }
-    }   
-    else if (myCenterY < 0 && areaY>-1)
+      }
+    } else if (myCenterY < 0 && areaY>-1)
     {     
       areaY--;
       myCenterY = screenSize;
@@ -287,20 +285,42 @@ class SpaceShip extends Floater
       }     
       for (int i = 0; i < asteroid.length; i++) {
         asteroid[i].reset();
-      }  
-    }   
+      }
+    }
   }   
-  public void setX(int x) {myCenterX = x;}  
-  public int getX() {return (int)myCenterX;}   
-  public void setY(int y) {myCenterY = y;}   
-  public int getY() {return (int)myCenterY;}
-  public void setDirectionX(double x) {myDirectionX = x;}  
-  public double getDirectionX() {return myDirectionX;}
-  public void setDirectionY(double y) {myDirectionY = y;}  
-  public double getDirectionY() {return myDirectionY;} 
-  public void setPointDirection(int degrees) {myPointDirection = degrees;}  
-  public double getPointDirection() {return myPointDirection;}  
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
 }
+
+
 
 class Asteroid extends Floater
 {
@@ -342,37 +362,55 @@ class Asteroid extends Floater
     myCenterY += myDirectionY;     
     myPointDirection +=speedRotation;
     //wrap around screen    
-    if(myCenterX >width+screenSize)
+    if (myCenterX >width+screenSize)
     {   
       reset();
       myCenterX = -screenSize;
-    }    
-    else if (myCenterX<-screenSize)
+    } else if (myCenterX<-screenSize)
     {   
       reset();
       myCenterX = width+screenSize;
     }    
-    if(myCenterY >height+screenSize)
+    if (myCenterY >height+screenSize)
     {    
       reset();
       myCenterY = -screenSize;
-    }   
-    else if (myCenterY < -screenSize)
+    } else if (myCenterY < -screenSize)
     {   
       reset();
       myCenterY = height+screenSize;
-    } 
+    }
   }
-  public void setX(int x) {myCenterX = x;}  
-  public int getX() {return (int)myCenterX;}   
-  public void setY(int y) {myCenterY = y;}   
-  public int getY() {return (int)myCenterY;}
-  public void setDirectionX(double x) {myDirectionX = x;}  
-  public double getDirectionX() {return myDirectionX;}
-  public void setDirectionY(double y) {myDirectionY = y;}  
-  public double getDirectionY() {return myDirectionY;} 
-  public void setPointDirection(int degrees) {myPointDirection = degrees;}  
-  public double getPointDirection() {return myPointDirection;} 
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
 }
 
 abstract class Floater //Do NOT modify the Floater class! Make changes in the SpaceShip class 
@@ -396,19 +434,19 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
   abstract public void setPointDirection(int degrees);
   abstract public double getPointDirection();
 
-//Accelerates the floater in the direction it is pointing (myPointDirection)   
+  //Accelerates the floater in the direction it is pointing (myPointDirection)   
   public void accelerate (double dAmount)   
   {          
     //convert the current direction the floater is pointing to radians    
     double dRadians =myPointDirection*(Math.PI/180);     
     //change coordinates of direction of travel    
     myDirectionX += ((dAmount) * Math.cos(dRadians));    
-    myDirectionY += ((dAmount) * Math.sin(dRadians));       
+    myDirectionY += ((dAmount) * Math.sin(dRadians));
   }   
   public void rotate (int nDegreesOfRotation)   
   {     
     //rotates the floater by a given number of degrees    
-    myPointDirection+=nDegreesOfRotation;   
+    myPointDirection+=nDegreesOfRotation;
   }   
   public void move ()   //move the floater in the current direction of travel
   {      
@@ -417,22 +455,20 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     myCenterY += myDirectionY;     
 
     //wrap around screen    
-    if(myCenterX >width)
+    if (myCenterX >width)
     {     
-      myCenterX = 0;    
-    }    
-    else if (myCenterX<0)
+      myCenterX = 0;
+    } else if (myCenterX<0)
     {     
-      myCenterX = width;    
+      myCenterX = width;
     }    
-    if(myCenterY >height)
+    if (myCenterY >height)
     {    
-      myCenterY = 0;    
-    }   
-    else if (myCenterY < 0)
+      myCenterY = 0;
+    } else if (myCenterY < 0)
     {     
-      myCenterY = height;    
-    }   
+      myCenterY = height;
+    }
   }   
   public void show ()  //Draws the floater at the current position  
   {             
@@ -442,15 +478,15 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
     double dRadians = myPointDirection*(Math.PI/180);                 
     int xRotatedTranslated, yRotatedTranslated;    
     beginShape();         
-    for(int nI = 0; nI < corners; nI++)    
+    for (int nI = 0; nI < corners; nI++)    
     {     
       //rotate and translate the coordinates of the floater using current direction 
       xRotatedTranslated = (int)((xCorners[nI] * Math.cos(dRadians)) - (yCorners[nI] * Math.sin(dRadians))+myCenterX);     
       yRotatedTranslated = (int)((xCorners[nI] * Math.sin(dRadians)) + (yCorners[nI] * Math.cos(dRadians))+myCenterY);      
-      vertex(xRotatedTranslated,yRotatedTranslated);    
+      vertex(xRotatedTranslated, yRotatedTranslated);
     }   
-    endShape(CLOSE);  
-  }   
+    endShape(CLOSE);
+  }
 }
 
 class Star 
@@ -466,7 +502,7 @@ class Star
   public void show() {
     fill(starColor);
     noStroke();
-    ellipse(starX,starY,(float)starSize,(float)starSize);
+    ellipse(starX, starY, (float)starSize, (float)starSize);
     starColor = (int)(Math.random()*50)+200;
     starSize = Math.random()*5;
   }
@@ -479,12 +515,12 @@ class HyperJump extends Gui
   public HyperJump() {
     rectY = 310;
     barSize = 0;
-    barColor = color(0,0,255);
+    barColor = color(0, 0, 255);
     titleName = "Hyperjump";
     titleY = 300;
   }
   public void interaction() {
-      
+
     if (hyperCool > 0) {
       hyperCool -= 0.5;
       barSize = (hyperCool/hyperCoolAdd)*rectSizeX;
@@ -497,7 +533,7 @@ class Speed extends Gui
   public Speed() {
     rectY = 270;
     barSize = 0;
-    barColor = color(0,255,0);
+    barColor = color(0, 255, 0);
     titleName = "Speed";
     titleY = 260;
   }
@@ -513,7 +549,7 @@ class Health extends Gui
   public Health() {
     rectY = 230;
     barSize = (currentHealth/100)*rectSizeX;
-    barColor = color(255,0,0);
+    barColor = color(255, 0, 0);
     titleName = "Health";
     titleY = 220;
   }
@@ -528,7 +564,7 @@ class Fuel extends Gui
   public Fuel() {
     rectY = 350;
     barSize = (currentFuel/100)*rectSizeX;
-    barColor = color(150,150,150);
+    barColor = color(150, 150, 150);
     titleName = "Fuel";
     titleY = 340;
   }
@@ -578,7 +614,7 @@ abstract class Gui
   protected int titleX = (screenSize-screenSize)/2;
   protected int titleY;
   protected int rectSizeX;
-  
+
   public void show() {
     titleX = (width-height)/2;
     rectSizeX = width-height-19;
@@ -646,7 +682,7 @@ public void keyReleased() {
   if (keyCode == 'J' && (int)hyperjump.hyperCool == 0) {
     jPressed = false;
     fill(255);
-    ellipse((float)fX,(float)fY,100,100);
+    ellipse((float)fX, (float)fY, 100, 100);
     ship.setX((int)fX);
     ship.setY((int)fY);
     if ((int)hyperjump.hyperCool == 0) {
