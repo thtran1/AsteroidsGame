@@ -1,11 +1,13 @@
 int screenSize = 750;
 SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
+SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 Asteroid[] asteroid = new Asteroid[50];
 HyperJump hyperjump = new HyperJump();
 Speed speed = new Speed();
 Health health = new Health();
 Fuel fuel = new Fuel();
 areaMap map = new areaMap();
+helpButton help = new helpButton();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
 double gravity = 1.015;
 double maxTorque = 0.2;
@@ -26,16 +28,7 @@ boolean dPressed = false;
 boolean qPressed = false;
 boolean ePressed = false;
 boolean jPressed = false;
-boolean asteroidCollision() 
-{
-  for (int i = 0; i < asteroid.length; i++) {
-    float collisionDist = dist(ship.getX(), ship.getY(), asteroid[i].getX(), asteroid[i].getY());
-    if (collisionDist < 10) {
-      return true;
-    }
-  }
-  return false;
-}
+boolean mouseClick = false;
 
 public void setup() 
 {
@@ -56,6 +49,13 @@ public void draw()
   rect(-100, -100, screenSize+100, screenSize+100);
   for (int i = 0; i < stars.length; i++) {
     stars[i].show();
+  }
+  if(areaX == 7 && areaY == 7) {
+    spacestation.show();
+    if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
+    {
+      currentFuel += 0.1;
+    }
   }
   if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed) {
     double dRadians = (ship.myPointDirection)*(Math.PI/180);
@@ -136,7 +136,7 @@ public void draw()
     fY = iY;
   }
   if (wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) {
-    currentFuel-=0.01;
+    currentFuel-=0.1;
   }
   if (areaX > areaSize) {
     areaX = 0;
@@ -152,9 +152,11 @@ public void draw()
   }
   ship.show();
   ship.move();
-  for (int i = 0; i < asteroid.length; i++) {
-    asteroid[i].show();
-    asteroid[i].move();
+  if (areaX != 7 || areaY != 7) {
+    for (int i = 0; i < asteroid.length; i++) {
+      asteroid[i].show();
+      asteroid[i].move();
+    }
   }
   fill(50);
   noStroke();
@@ -168,6 +170,7 @@ public void draw()
   fuel.show();
   fuel.interaction();
   map.show();
+  help.show();
   fill(255);
   text(areaX + " " + areaY, 10, 10);
   //stroke(255);
@@ -320,7 +323,93 @@ class SpaceShip extends Floater
   }
 }
 
-
+class SpaceStation extends Floater
+{
+  protected int stationSize = 4;
+  SpaceStation(int x, int y) {
+    corners = 8;
+    xCorners = new int[corners];
+    yCorners = new int[corners];
+    xCorners[0] = -25*stationSize;
+    yCorners[0] = -50*stationSize;
+    xCorners[1] = 25*stationSize;
+    yCorners[1] = -50*stationSize;
+    xCorners[2] = 50*stationSize;
+    yCorners[2] = -25*stationSize;
+    xCorners[3] = 50*stationSize;
+    yCorners[3] = 25*stationSize;
+    xCorners[4] = 25*stationSize;
+    yCorners[4] = 50*stationSize;
+    xCorners[5] = -25*stationSize;
+    yCorners[5] = 50*stationSize;
+    xCorners[6] = -50*stationSize;
+    yCorners[6] = 25*stationSize;
+    xCorners[7] = -50*stationSize;
+    yCorners[7] = -25*stationSize;
+    myColor = color(150);
+    myCenterX = x;
+    myCenterY = y;
+    myDirectionX = 0;
+    myDirectionY = 0;
+    myPointDirection = 270;
+    nDegreesOfRotation = 0;
+  }
+  public void show ()  //Draws the floater at the current position  
+  {             
+    fill(myColor);   
+    stroke(myColor);    
+    //convert degrees to radians for sin and cos         
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI] * Math.cos(dRadians)) - (yCorners[nI] * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI] * Math.sin(dRadians)) + (yCorners[nI] * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+    //double dRadians = (myPointDirection)*(Math.PI/180);
+    fill(50);
+    noStroke();
+    translate((float)myCenterX, (float)myCenterY);
+    //rotate((int)dRadians);
+    rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
+    rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
+    resetMatrix();
+  }
+   public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
+}
 
 class Asteroid extends Floater
 {
@@ -544,8 +633,8 @@ class Speed extends Gui
 
 class Health extends Gui
 {
-  int currentHealth = 100;
-  int maxHealth = 100;
+  protected int currentHealth = 100;
+  protected int maxHealth = 100;
   public Health() {
     rectY = 230;
     barSize = (currentHealth/100)*rectSizeX;
@@ -560,7 +649,7 @@ class Health extends Gui
 
 class Fuel extends Gui
 {
-  int maxFuel = 100;
+  protected int maxFuel = 100;
   public Fuel() {
     rectY = 350;
     barSize = (currentFuel/100)*rectSizeX;
@@ -603,6 +692,32 @@ class areaMap extends Gui
     aX = (areaX*8.733);
     aY = (areaY*8.733);
   }
+}
+
+class helpButton extends Gui
+{
+  color rectColor;
+  helpButton() {
+    rectY = 500;
+    titleName = "Help";
+    titleY = 515;
+    rectColor = 150;
+  }
+  public void show() {
+    titleX = (width-height)/2;
+    rectSizeX = width-height-19;
+    //rectangle
+    fill(rectColor);
+    stroke(0);
+    rect((float)(screenSize+9), rectY, rectSizeX+1, 20);
+    //title
+    fill(255);
+    textAlign(CENTER);
+    text(titleName, screenSize+titleX, titleY);
+  }
+  
+    
+  
 }
 
 abstract class Gui
@@ -689,4 +804,10 @@ public void keyReleased() {
       hyperjump.hyperCool = hyperjump.hyperCoolAdd;
     }
   }
+}
+
+public void mousePressed() {
+  if(mousePressed) {
+    mouseClick = true;
+  }else {mouseClick = false;}
 }
