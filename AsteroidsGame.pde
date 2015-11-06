@@ -325,7 +325,7 @@ class SpaceShip extends Floater
 
 class SpaceStation extends Floater
 {
-  protected int stationSize = 4;
+  protected int stationSize = 5;
   SpaceStation(int x, int y) {
     corners = 8;
     xCorners = new int[corners];
