@@ -57,7 +57,7 @@ public void draw()
       currentFuel += 0.1;
     }
   }
-  if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed) {
+  if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
     double dRadians = (ship.myPointDirection)*(Math.PI/180);
     fill(255, 0, 0);
     translate((float)ship.myCenterX, (float)ship.myCenterY);
@@ -67,7 +67,7 @@ public void draw()
     resetMatrix();
     ship.accelerate(maxTorque, 0);
   }
-  if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed) {
+  if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
     double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
     double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
     fill(255, 0, 0);
@@ -82,7 +82,7 @@ public void draw()
     resetMatrix();
     ship.accelerate(-maxTorque, 0);
   }
-  if (qPressed) {
+  if (qPressed && currentFuel > 0) {
     double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
     fill(255, 0, 0);
     translate((float)ship.myCenterX, (float)ship.myCenterY);
@@ -91,7 +91,7 @@ public void draw()
     resetMatrix();
     ship.accelerate(maxTorque/1.5, -90);
   }
-  if (ePressed) {
+  if (ePressed && currentFuel > 0) {
     double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
     fill(255, 0, 0);
     translate((float)ship.myCenterX, (float)ship.myCenterY);
@@ -100,7 +100,7 @@ public void draw()
     resetMatrix();
     ship.accelerate(maxTorque/1.5, 90);
   }
-  if (dPressed && !jPressed) {
+  if (dPressed && !jPressed && currentFuel > 0) {
     double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
     fill(255, 0, 0);
     translate((float)ship.myCenterX, (float)ship.myCenterY);
@@ -109,7 +109,7 @@ public void draw()
     resetMatrix();
     ship.rotate(rotateSpeed);
   }
-  if (aPressed && !jPressed) {
+  if (aPressed && !jPressed && currentFuel > 0) {
     double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
     fill(255, 0, 0);
     translate((float)ship.myCenterX, (float)ship.myCenterY);
@@ -135,7 +135,7 @@ public void draw()
     fX = iX;
     fY = iY;
   }
-  if (wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) {
+  if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
     currentFuel-=0.1;
   }
   if (areaX > areaSize) {
@@ -752,10 +752,10 @@ abstract class Gui
 
 public void keyPressed() 
 {
-  if (keyCode == 'W' || keyCode == UP && currentFuel > 0) {
+  if (keyCode == 'W' || keyCode == UP) {
     wPressed = true;
   }
-  if (keyCode == 'S' || keyCode == DOWN && currentFuel > 0) {
+  if (keyCode == 'S' || keyCode == DOWN) {
     sPressed = true;
   }
   if (keyCode == 'Q' && currentFuel > 0) {
@@ -764,10 +764,10 @@ public void keyPressed()
   if (keyCode == 'E' && currentFuel > 0) {
     ePressed = true;
   }
-  if (keyCode == 'D' || keyCode == RIGHT && currentFuel > 0) {
+  if (keyCode == 'D' || keyCode == RIGHT) {
     dPressed = true;
   }
-  if (keyCode == 'A' || keyCode == LEFT && currentFuel > 0) {
+  if (keyCode == 'A' || keyCode == LEFT) {
     aPressed = true;
   }
   if (keyCode == 'J' && (int)hyperjump.hyperCool == 0) {
