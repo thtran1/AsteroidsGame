@@ -689,8 +689,8 @@ class areaMap extends Gui
     noFill();
     stroke(255);
     rect((float)(screenSize+10)+aX, (float)rectY+1+aY, rectSizeX/areaSize, rectSizeX/areaSize);
-    aX = (areaX*8.733);
-    aY = (areaY*8.733);
+    aX = (areaX*12.066);
+    aY = (areaY*12.066);
   }
 }
 
