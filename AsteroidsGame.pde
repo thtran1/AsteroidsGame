@@ -1,4 +1,4 @@
-int screenSize = 750;
+int screenSize = 700;
 SpaceShip ship = new SpaceShip(screenSize/2,screenSize/2);
 Asteroid[] asteroid = new Asteroid[50];
 HyperJump hyperjump = new HyperJump();
@@ -39,7 +39,7 @@ boolean asteroidCollision()
 
 public void setup() 
 {
-  size(900, 750);
+  size(900, 700);
   screenSize = height;
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
