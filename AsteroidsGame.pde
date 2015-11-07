@@ -19,7 +19,7 @@ int topSpeed = 10;
 int areaSize = 24;
 int areaX = areaSize/2;
 int areaY = areaSize/2;
-int robotShow = 1; //1 = alwasy showing. 11 = default
+int robotShow = 11; //1 = alwasy showing. 11 = default
 float currentFuel = 100;
 //double fX = iX;
 //double fY = iY;
@@ -60,6 +60,16 @@ public void draw()
     }
   }
   control.control(); //spaceship controls
+  if (areaX == areaSize/2 && areaY == areaSize/2) {
+    if ((int)robotcontrol.fuel <= 9) {
+      robotcontrol.reFuel();
+    }
+    if ((int)robotcontrol.fuel == 10) {
+      robotcontrol.fullFuel();
+    }
+    //fill(255);
+    //text(robotcontrol.fuel, 50, 200);
+  }
   if ((areaX != areaSize/2 || areaY != areaSize/2) && 10%robotShow == 0) {
     robotcontrol.control();//robot spaceship controls
   }
@@ -75,10 +85,11 @@ public void draw()
   if (areaY < 0) {
     areaY = areaSize;
   }
-  if ((areaX != areaSize/2 || areaY != areaSize/2) && 10%robotShow == 0) {
-    robot.show();
-    robot.move();
-  }
+
+  //if ((areaX != areaSize/2 || areaY != areaSize/2) && 10%robotShow == 0) {
+  robot.show();
+  robot.move();
+  //}
   ship.show();
   ship.move();
   if (areaX != areaSize/2 || areaY != areaSize/2) {
@@ -360,20 +371,199 @@ class SpaceShip extends Floater
 
 class RobotSpaceShipControl
 {
-  double fX = robot.myCenterX;
-  double fY = robot.myCenterY;
   protected double radDir =-Math.PI/2;
+  protected double radDir1 =-Math.PI/2;
   protected int space;
   protected int spaceOffset;
   protected int rotateOffset;
   protected int strafeOffset;
+  protected float fuel;
   RobotSpaceShipControl() {
-    space = 150;
+    fuel = 0;
+    space = 100;
     spaceOffset = 50;
     rotateOffset = 25;
     strafeOffset = 25;
   }
+  public void fullFuel() {
+    space = 50;
+    spaceOffset = 25;
+    rotateOffset = 25;
+    strafeOffset = 25;
+    radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
+    if (robot.getY()-spacestation.getY()<0) {
+      radDir*=-1;
+    }
+    if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())>screenSize/2) {
+      int x = (int)(Math.random()*1000);
+      if (x%250==0) {
+        fuel = 0;
+      }
+    }
+    //robot.myPointDirection=radDir*180/(Math.PI);
+    fill(255);
+    text((int)(radDir*180/(Math.PI)), 50, 10);
+
+    double dRadians = (robot.myPointDirection)*(Math.PI/180);
+    fill(255, 0, 0);
+    translate((float)robot.myCenterX, (float)robot.myCenterY);
+    rotate((float)dRadians);
+    ellipse(-7, -3, 10, 2);
+    ellipse(-7, 3, 10, 2);
+    resetMatrix();
+    robot.accelerate(maxTorque, 0);
+
+    //if (robot.myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+    //  double dRadiansR = (robot.myPointDirection+90)*(Math.PI/180);
+    //  fill(255, 0, 0);
+    //  translate((float)robot.myCenterX, (float)robot.myCenterY);
+    //  rotate((float)dRadiansR);
+    //  ellipse(5, -9, 10, 2);
+    //  resetMatrix();
+    //  robot.accelerate(maxTorque/1.5, -90);
+    //}
+    //if (robot.myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+    //  double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
+    //  fill(255, 0, 0);
+    //  translate((float)robot.myCenterX, (float)robot.myCenterY);
+    //  rotate((float)dRadiansL);
+    //  ellipse(5, 9, 10, 2);
+    //  resetMatrix();
+    //  robot.accelerate(maxTorque/1.5, 90);
+    //}
+    //if (robot.myPointDirection-(radDir*180/(Math.PI))<-rotateOffset) { //d
+    //  double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
+    //  fill(255, 0, 0);
+    //  translate((float)robot.myCenterX, (float)robot.myCenterY);
+    //  rotate((float)dRadiansL);
+    //  ellipse(3, 20, 8, 2);
+    //  resetMatrix();
+    //  robot.rotate(rotateSpeed);
+    //}
+    //if (robot.myPointDirection-(radDir*180/(Math.PI))>rotateOffset) { //a
+    //  double dRadiansR = (robot.myPointDirection+90)*(Math.PI/180);
+    //  fill(255, 0, 0);
+    //  translate((float)robot.myCenterX, (float)robot.myCenterY);
+    //  rotate((float)dRadiansR);
+    //  ellipse(3, -20, 8, 2);
+    //  resetMatrix();
+    //  robot.rotate(-rotateSpeed);
+    //}
+    //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+    //  currentFuel-=0.01;
+    //}
+    noStroke();
+    fill(0, 50);
+    //double dRadians = robot.myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < robot.corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.cos(dRadians)) - (robot.yCorners[nI]*2 * Math.sin(dRadians))+robot.myCenterX);     
+      yRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.sin(dRadians)) + (robot.yCorners[nI]*2 * Math.cos(dRadians))+robot.myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+  }
+  public void reFuel() {
+    space = 100;
+    spaceOffset = 50;
+    rotateOffset = 25;
+    strafeOffset = 25;
+    radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
+    if (robot.getY()-spacestation.getY()<0) {
+      radDir*=-1;
+    }
+    if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<space+spaceOffset) {
+      fuel+=0.02;
+    }
+    fill(255);
+    text((int)(radDir*180/(Math.PI)), 50, 10);
+    if ((abs((float)robot.myDirectionX)+abs((float)robot.myDirectionY))<topSpeed&&abs((float)(robot.myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())>space+spaceOffset) { //w
+      double dRadians = (robot.myPointDirection)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadians);
+      ellipse(-7, -3, 10, 2);
+      ellipse(-7, 3, 10, 2);
+      resetMatrix();
+      robot.accelerate(maxTorque, 0);
+    }
+    if ((abs((float)robot.myDirectionX)+abs((float)robot.myDirectionY))<topSpeed&&abs((float)(robot.myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<space-spaceOffset) { //s
+      double dRadiansR = (robot.myPointDirection+30)*(Math.PI/180);
+      double dRadiansL = (robot.myPointDirection-30)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(1, 4, 10, 2);
+      resetMatrix();
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(1, -4, 10, 2);
+      resetMatrix();
+      robot.accelerate(-maxTorque, 0);
+    }
+    if (robot.myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+      double dRadiansR = (robot.myPointDirection+90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(5, -9, 10, 2);
+      resetMatrix();
+      robot.accelerate(maxTorque/1.5, -90);
+    }
+    if (robot.myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+      double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(5, 9, 10, 2);
+      resetMatrix();
+      robot.accelerate(maxTorque/1.5, 90);
+    }
+    if (robot.myPointDirection-(radDir*180/(Math.PI))<-rotateOffset) { //d
+      double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(3, 20, 8, 2);
+      resetMatrix();
+      robot.rotate(rotateSpeed);
+    }
+    if (robot.myPointDirection-(radDir*180/(Math.PI))>rotateOffset) { //a
+      double dRadiansR = (robot.myPointDirection+90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)robot.myCenterX, (float)robot.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(3, -20, 8, 2);
+      resetMatrix();
+      robot.rotate(-rotateSpeed);
+    }
+    //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+    //  currentFuel-=0.01;
+    //}
+    noStroke();
+    fill(0, 50);
+    double dRadians = robot.myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < robot.corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.cos(dRadians)) - (robot.yCorners[nI]*2 * Math.sin(dRadians))+robot.myCenterX);     
+      yRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.sin(dRadians)) + (robot.yCorners[nI]*2 * Math.cos(dRadians))+robot.myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+  }
+
   public void control() {
+    space = 200;
+    spaceOffset = 50;
+    rotateOffset = 25;
+    strafeOffset = 30;
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
@@ -460,6 +650,7 @@ class RobotSpaceShipControl
     endShape(CLOSE);
   }
 }
+
 
 class RobotSpaceShip extends Floater  
 {   
