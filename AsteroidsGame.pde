@@ -19,7 +19,7 @@ int topSpeed = 10;
 int areaSize = 24;
 int areaX = areaSize/2;
 int areaY = areaSize/2;
-int robotShow = 10;
+int robotShow = 1; //1 = alwasy showing. 11 = default
 float currentFuel = 100;
 //double fX = iX;
 //double fY = iY;
@@ -161,7 +161,7 @@ class SpaceShipControl
       rotate((float)dRadiansL);
       ellipse(3, 20, 8, 2);
       resetMatrix();
-      ship.rotat(rotateSpeed);
+      ship.rotate(rotateSpeed);
     }
     if (aPressed && !jPressed && currentFuel > 0) {
       double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
@@ -170,7 +170,7 @@ class SpaceShipControl
       rotate((float)dRadiansR);
       ellipse(3, -20, 8, 2);
       resetMatrix();
-      ship.rotat(-rotateSpeed);
+      ship.rotate(-rotateSpeed);
     }
     if (jPressed) {
       ship.myDirectionX = 0;
@@ -264,7 +264,7 @@ class SpaceShip extends Floater
     myDirectionX += ((dAmount) * Math.cos(dRadians));    
     myDirectionY += ((dAmount) * Math.sin(dRadians));
   }   
-  public void rotat (int dAmount)   
+  public void rotate (int dAmount)   
   {     
     //rotates the floater by a given number of degrees  
     nDegreesOfRotation+=dAmount;
@@ -360,16 +360,18 @@ class SpaceShip extends Floater
 
 class RobotSpaceShipControl
 {
+  double fX = robot.myCenterX;
+  double fY = robot.myCenterY;
   protected double radDir =-Math.PI/2;
   protected int space;
   protected int spaceOffset;
   protected int rotateOffset;
   protected int strafeOffset;
   RobotSpaceShipControl() {
-    space = 250;
-    spaceOffset = 100;
-    rotateOffset = 15;
-    strafeOffset = 45;
+    space = 150;
+    spaceOffset = 50;
+    rotateOffset = 25;
+    strafeOffset = 25;
   }
   public void control() {
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
@@ -440,23 +442,6 @@ class RobotSpaceShipControl
       resetMatrix();
       robot.rotate(-rotateSpeed);
     }
-    //if (jPressed) { //j
-    //  robot.myDirectionX = 0;
-    //  robot.myDirectionY = 0;
-    //  double dRadians = (robot.myPointDirection)*(Math.PI/180);
-    //  if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
-    //    fX += ((maxTorque*100) * Math.cos(dRadians));    
-    //    fY += ((maxTorque*100) * Math.sin(dRadians));
-    //  }
-    //  stroke(0, 0, 255);
-    //  line((float)iX, (float)iY, (float)fX, (float)fY);
-    //}
-    //if (!jPressed) { //!j
-    //  iX = robot.myCenterX;
-    //  iY = robot.myCenterY;
-    //  fX = iX;
-    //  fY = iY;
-    //}
     //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
     //  currentFuel-=0.01;
     //}
@@ -526,11 +511,11 @@ class RobotSpaceShip extends Floater
     nDegreesOfRotation = 0;
   }
   public void reset() {
-    robotShow = (int)(Math.random()*10)+1;
+    robotShow = (int)(Math.random()*robotShow)+1;
     myCenterX = Math.random()*screenSize;
     myCenterY = Math.random()*screenSize;
-    myDirectionX = Math.random()*topSpeed/2;
-    myDirectionY = Math.random()*topSpeed/2;
+    myDirectionX = 0;
+    myDirectionY = 0;
     myPointDirection = Math.random()*360;
   }
   public void accelerate (double dAmount, double pAdd)   
