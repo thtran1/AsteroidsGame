@@ -1,5 +1,6 @@
 int screenSize = 700;
 SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
+SpaceShipControl control = new SpaceShipControl();
 SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 Asteroid[] asteroid = new Asteroid[50];
 HyperJump hyperjump = new HyperJump();
@@ -13,9 +14,9 @@ double gravity = 1.015;
 double maxTorque = 0.2;
 int rotateSpeed = 1;
 int topSpeed = 10;
-int areaSize = 14;
-int areaX = 7;
-int areaY = 7;
+int areaSize = 24;
+int areaX = areaSize/2;
+int areaY = areaSize/2;
 float currentFuel = 100;
 double iX = ship.myCenterX;
 double iY = ship.myCenterY;
@@ -50,94 +51,14 @@ public void draw()
   for (int i = 0; i < stars.length; i++) {
     stars[i].show();
   }
-  if(areaX == 7 && areaY == 7) {
+  if (areaX == areaSize/2 && areaY == areaSize/2) {
     spacestation.show();
     if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
     {
       currentFuel += 0.1;
     }
   }
-  if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-    double dRadians = (ship.myPointDirection)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadians);
-    ellipse(-7, -3, 10, 2);
-    ellipse(-7, 3, 10, 2);
-    resetMatrix();
-    ship.accelerate(maxTorque, 0);
-  }
-  if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-    double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
-    double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansR);
-    ellipse(1, 4, 10, 2);
-    resetMatrix();
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansL);
-    ellipse(1, -4, 10, 2);
-    resetMatrix();
-    ship.accelerate(-maxTorque, 0);
-  }
-  if (qPressed && currentFuel > 0) {
-    double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansR);
-    ellipse(5, -9, 10, 2);
-    resetMatrix();
-    ship.accelerate(maxTorque/1.5, -90);
-  }
-  if (ePressed && currentFuel > 0) {
-    double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansL);
-    ellipse(5, 9, 10, 2);
-    resetMatrix();
-    ship.accelerate(maxTorque/1.5, 90);
-  }
-  if (dPressed && !jPressed && currentFuel > 0) {
-    double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansL);
-    ellipse(3, 20, 8, 2);
-    resetMatrix();
-    ship.rotate(rotateSpeed);
-  }
-  if (aPressed && !jPressed && currentFuel > 0) {
-    double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)ship.myCenterX, (float)ship.myCenterY);
-    rotate((float)dRadiansR);
-    ellipse(3, -20, 8, 2);
-    resetMatrix();
-    ship.rotate(-rotateSpeed);
-  }
-  if (jPressed) {
-    ship.myDirectionX = 0;
-    ship.myDirectionY = 0;
-    double dRadians = (ship.myPointDirection)*(Math.PI/180);
-    if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
-      fX += ((maxTorque*100) * Math.cos(dRadians));    
-      fY += ((maxTorque*100) * Math.sin(dRadians));
-    }
-    stroke(0, 0, 255);
-    line((float)iX, (float)iY, (float)fX, (float)fY);
-  }
-  if (!jPressed) {
-    iX = ship.myCenterX;
-    iY = ship.myCenterY;
-    fX = iX;
-    fY = iY;
-  }
-  if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
-    currentFuel-=0.1;
-  }
+  control.control(); //spaceship controls
   if (areaX > areaSize) {
     areaX = 0;
   }
@@ -152,7 +73,7 @@ public void draw()
   }
   ship.show();
   ship.move();
-  if (areaX != 7 || areaY != 7) {
+  if (areaX != areaSize/2 || areaY != areaSize/2) {
     for (int i = 0; i < asteroid.length; i++) {
       asteroid[i].show();
       asteroid[i].move();
@@ -175,6 +96,93 @@ public void draw()
   text(areaX + " " + areaY, 10, 10);
   //stroke(255);
   //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
+}
+
+class SpaceShipControl
+{
+  public void control() {
+    if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+      double dRadians = (ship.myPointDirection)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadians);
+      ellipse(-7, -3, 10, 2);
+      ellipse(-7, 3, 10, 2);
+      resetMatrix();
+      ship.accelerate(maxTorque, 0);
+    }
+    if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+      double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
+      double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(1, 4, 10, 2);
+      resetMatrix();
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(1, -4, 10, 2);
+      resetMatrix();
+      ship.accelerate(-maxTorque, 0);
+    }
+    if (qPressed && currentFuel > 0) {
+      double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(5, -9, 10, 2);
+      resetMatrix();
+      ship.accelerate(maxTorque/1.5, -90);
+    }
+    if (ePressed && currentFuel > 0) {
+      double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(5, 9, 10, 2);
+      resetMatrix();
+      ship.accelerate(maxTorque/1.5, 90);
+    }
+    if (dPressed && !jPressed && currentFuel > 0) {
+      double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansL);
+      ellipse(3, 20, 8, 2);
+      resetMatrix();
+      ship.rotate(rotateSpeed);
+    }
+    if (aPressed && !jPressed && currentFuel > 0) {
+      double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+      fill(255, 0, 0);
+      translate((float)ship.myCenterX, (float)ship.myCenterY);
+      rotate((float)dRadiansR);
+      ellipse(3, -20, 8, 2);
+      resetMatrix();
+      ship.rotate(-rotateSpeed);
+    }
+    if (jPressed) {
+      ship.myDirectionX = 0;
+      ship.myDirectionY = 0;
+      double dRadians = (ship.myPointDirection)*(Math.PI/180);
+      if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
+        fX += ((maxTorque*100) * Math.cos(dRadians));    
+        fY += ((maxTorque*100) * Math.sin(dRadians));
+      }
+      stroke(0, 0, 255);
+      line((float)iX, (float)iY, (float)fX, (float)fY);
+    }
+    if (!jPressed) {
+      iX = ship.myCenterX;
+      iY = ship.myCenterY;
+      fX = iX;
+      fY = iY;
+    }
+    if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+      currentFuel-=0.01;
+    }
+  }
 }
 
 class SpaceShip extends Floater  
@@ -379,7 +387,7 @@ class SpaceStation extends Floater
     rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
     resetMatrix();
   }
-   public void setX(int x) {
+  public void setX(int x) {
     myCenterX = x;
   }  
   public int getX() {
@@ -602,11 +610,11 @@ class HyperJump extends Gui
   protected float hyperCool = 0;
   protected float hyperCoolAdd = 50;
   public HyperJump() {
-    rectY = 310;
+    rectY = 320;
     barSize = 0;
     barColor = color(0, 0, 255);
     titleName = "Hyperjump";
-    titleY = 300;
+    titleY = 310;
   }
   public void interaction() {
 
@@ -620,11 +628,11 @@ class HyperJump extends Gui
 class Speed extends Gui
 {
   public Speed() {
-    rectY = 270;
+    rectY = 280;
     barSize = 0;
     barColor = color(0, 255, 0);
     titleName = "Speed";
-    titleY = 260;
+    titleY = 270;
   }
   public void interaction() {
     barSize = ((abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY))/topSpeed)*rectSizeX;
@@ -636,11 +644,11 @@ class Health extends Gui
   protected int currentHealth = 100;
   protected int maxHealth = 100;
   public Health() {
-    rectY = 230;
+    rectY = 240;
     barSize = (currentHealth/100)*rectSizeX;
     barColor = color(255, 0, 0);
     titleName = "Health";
-    titleY = 220;
+    titleY = 230;
   }
   public void interaction() {
     barSize = (currentHealth/maxHealth)*rectSizeX;
@@ -651,11 +659,11 @@ class Fuel extends Gui
 {
   protected int maxFuel = 100;
   public Fuel() {
-    rectY = 350;
+    rectY = 360;
     barSize = (currentFuel/100)*rectSizeX;
     barColor = color(150, 150, 150);
     titleName = "Fuel";
-    titleY = 340;
+    titleY = 350;
   }
   public void interaction() {
     barSize = (currentFuel/maxFuel)*rectSizeX;
@@ -664,9 +672,9 @@ class Fuel extends Gui
 
 class areaMap extends Gui
 {
-  int aSize = 14;
-  float aX = areaX/aSize*rectSizeX;
-  float aY = areaY/aSize*rectSizeX;
+  int aSize = 24;
+  float aX;
+  float aY;
   public areaMap() {
     rectY = 30;
     barSize = rectSizeX/aSize;
@@ -685,12 +693,16 @@ class areaMap extends Gui
     fill(0);
     stroke(255);
     rect((float)(screenSize+9), rectY, rectSizeX+1, rectSizeX+1);
+    //spacestation
+    fill(150);
+    noStroke();
+    ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(areaSize/2*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(areaSize/2*7.24)+1.5, rectSizeX/areaSize, rectSizeX/areaSize);
     //bar
     noFill();
     stroke(255);
-    rect((float)(screenSize+10)+aX, (float)rectY+1+aY, rectSizeX/areaSize, rectSizeX/areaSize);
-    aX = (areaX*12.066);
-    aY = (areaY*12.066);
+    ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+aX+1.5, (float)rectY+(rectSizeX/areaSize/2)+aY+1.5, rectSizeX/areaSize, rectSizeX/areaSize);
+    aX = (areaX*7.24);
+    aY = (areaY*7.24);
   }
 }
 
@@ -698,9 +710,9 @@ class helpButton extends Gui
 {
   color rectColor;
   helpButton() {
-    rectY = 500;
+    rectY = 510;
     titleName = "Help";
-    titleY = 515;
+    titleY = 525;
     rectColor = 150;
   }
   public void show() {
@@ -715,9 +727,6 @@ class helpButton extends Gui
     textAlign(CENTER);
     text(titleName, screenSize+titleX, titleY);
   }
-  
-    
-  
 }
 
 abstract class Gui
@@ -807,7 +816,9 @@ public void keyReleased() {
 }
 
 public void mousePressed() {
-  if(mousePressed) {
+  if (mousePressed) {
     mouseClick = true;
-  }else {mouseClick = false;}
+  } else {
+    mouseClick = false;
+  }
 }
