@@ -26,6 +26,9 @@ double gravity = 1.015;
 double maxTorque = 0.2;
 int rotateSpeed = 1;
 int topSpeed = 10;
+int bulletSpeed = 20;
+float bulletS = 2;
+float bulletSpray = 0.1;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
 double shootDamage = 5;
@@ -95,44 +98,33 @@ public void draw()
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
-          health.currentHealth += 1;
+          health.currentHealth += 0.1;
         }
         if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<25*spacestation.stationSize && robot.currentHealth < robot.maxHealth)
         {
-          robot.currentHealth += 1;
+          robot.currentHealth += 0.1;
         }
       }
       control.control(); //spaceship controls
-      if (areaX == areaSize/2 && areaY == areaSize/2) { //if ship at spacestation...
-        //if ((int)robotcontrol.fuel <= 9) {
-        //  robotcontrol.reFuel();
-        //}
-        //if ((int)robotcontrol.fuel == 10) {
-        //  robotcontrol.fullFuel();
-        //}
-        //robotcontrol.control();
-        //fill(255);
-        //text(robotcontrol.fuel, 50, 200);
-      }
-      if ((int)robot.currentHealth>robot.maxHealth/2) {
+      if ((int)robot.currentHealth>robot.maxHealth/3) {
         robotcontrol.control();//robot spaceship controls
-        text("Attack", 50, 300);
+        //text("Attack", 50, 300);
       }
-      if ((int)robot.currentHealth<=robot.maxHealth/2&&(int)robot.currentHealth>0) {
+      if ((int)robot.currentHealth<=robot.maxHealth/3&&(int)robot.currentHealth>0) {
         robotcontrol.reFuel();//robot spaceship controls
-        text("Need Health", 50, 300);
+        //text("Need Health", 50, 300);
       }
       for (int i = 0; i<bullet.size(); i++) {
         bullet.get(i).show();
         bullet.get(i).move();
-        if (abs(bullet.get(i).getX()-height/2)>=height/2||abs(bullet.get(i).getY()-height/2)>=height/2 || (areaX == areaSize/2 && areaY == areaSize/2)) {
+        if (abs(bullet.get(i).getX()-height/2)>=height/2||abs(bullet.get(i).getY()-height/2)>=height/2) {
           bullet.remove(i);
         }
       }
       for (int i = 0; i<robotbullet.size(); i++) {
         robotbullet.get(i).show();
         robotbullet.get(i).move();
-        if (abs(robotbullet.get(i).getX()-height/2)>=height/2||abs(robotbullet.get(i).getY()-height/2)>=height/2 || (areaX == areaSize/2 && areaY == areaSize/2)) {
+        if (abs(robotbullet.get(i).getX()-height/2)>=height/2||abs(robotbullet.get(i).getY()-height/2)>=height/2) {
           robotbullet.remove(i);
         }
       }
@@ -171,20 +163,16 @@ public void draw()
           }
         }
       }
-      if (areaX != areaSize/2 || areaY != areaSize/2) {
-        for (int x = 0; x < bullet.size(); x++) {
-          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.getX(), robot.getY()) < 10) {
-            robot.currentHealth-=shootDamage;
-            bullet.remove(x);
-          }
+      for (int x = 0; x < bullet.size(); x++) {
+        if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.getX(), robot.getY()) < 10+bullet.get(x).bulletSize/2) {
+          robot.currentHealth-=shootDamage;
+          bullet.remove(x);
         }
       }
-      if (areaX != areaSize/2 || areaY != areaSize/2) {
-        for (int x = 0; x < robotbullet.size(); x++) {
-          if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 10) {
-            health.currentHealth-=robotShootDamage;
-            robotbullet.remove(x);
-          }
+      for (int x = 0; x < robotbullet.size(); x++) {
+        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 10+robotbullet.get(x).bulletSize/2) {
+          health.currentHealth-=robotShootDamage;
+          robotbullet.remove(x);
         }
       }
       fill(50);
@@ -201,10 +189,6 @@ public void draw()
       map.show();
       help.show();
       help.interaction();
-      fill(255);
-      text(areaX + " " + areaY, 10, 10);
-      //stroke(255);
-      //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
     } else if ((int)health.currentHealth <= 0) {
       gameStop = true;
     }
@@ -294,7 +278,7 @@ class SpaceShipControl
       //fX = iX;
       //fY = iY;
     }
-    if (spacePressed && (int)shootCool == 0 && (areaX != areaSize/2 || areaY != areaSize/2)) {
+    if (spacePressed && (int)shootCool == 0) {
       bullet.add(new Bullet(ship));
       shootCool = shootCoolTime;
     }
@@ -319,20 +303,22 @@ class SpaceShipControl
 class Bullet extends Floater
 {
   protected double dRadians;
+  protected float bulletSize = bulletS;
   public Bullet(SpaceShip x) {
     myCenterX = x.getX();
     myCenterY = x.getY();
     myPointDirection = x.getPointDirection();
     dRadians =myPointDirection*(Math.PI/180);
-    myDirectionX=10*Math.cos(dRadians) + x.getDirectionX();
-    myDirectionY=10*Math.sin(dRadians) + x.getDirectionY();
+    myDirectionX=bulletSpeed*Math.cos(dRadians) + x.getDirectionX();
+    myDirectionY=bulletSpeed*Math.sin(dRadians) + x.getDirectionY();
     myColor = color(255, 255, 0);
   }
   public void show()
   {
     noStroke();
     fill(myColor);
-    ellipse((int)myCenterX, (int)myCenterY, 2, 2);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
+    bulletSize+=bulletSpray;
   }
   public void setX(int x) {
     myCenterX = x;
@@ -453,6 +439,12 @@ class SpaceShip extends Floater
       for (int i = 0; i < asteroid.size(); i++) {
         asteroid.get(i).reset();
       }
+      for (int i = 0; i < bullet.size(); i++) {
+        bullet.remove(i);
+      }
+      for (int i = 0; i < robotbullet.size(); i++) {
+        robotbullet.remove(i);
+      }
     } else if (myCenterX<0 && areaX>0)
     {     
       areaX--;
@@ -465,6 +457,12 @@ class SpaceShip extends Floater
       }
       for (int i = 0; i < asteroid.size(); i++) {
         asteroid.get(i).reset();
+      }
+      for (int i = 0; i < bullet.size(); i++) {
+        bullet.remove(i);
+      }
+      for (int i = 0; i < robotbullet.size(); i++) {
+        robotbullet.remove(i);
       }
     }    
     if (myCenterY >screenSize && areaY<areaSize)
@@ -480,6 +478,12 @@ class SpaceShip extends Floater
       for (int i = 0; i < asteroid.size(); i++) {
         asteroid.get(i).reset();
       }
+      for (int i = 0; i < bullet.size(); i++) {
+        bullet.remove(i);
+      }
+      for (int i = 0; i < robotbullet.size(); i++) {
+        robotbullet.remove(i);
+      }
     } else if (myCenterY < 0 && areaY>0)
     {     
       areaY--;
@@ -492,6 +496,12 @@ class SpaceShip extends Floater
       }     
       for (int i = 0; i < asteroid.size(); i++) {
         asteroid.get(i).reset();
+      }
+      for (int i = 0; i < bullet.size(); i++) {
+        bullet.remove(i);
+      }
+      for (int i = 0; i < robotbullet.size(); i++) {
+        robotbullet.remove(i);
       }
     }
     if (areaX == areaSize) {
@@ -562,72 +572,18 @@ class RobotSpaceShipControl
   protected float fuel;
   RobotSpaceShipControl() {
     fuel = 10;
-    space = 100;
-    spaceOffset = 50;
-    rotateOffset = 25;
-    strafeOffset = 25;
-  }
-  public void fullFuel() {
-    robot.myColor = color(150, 250, 150);
-    space = 50;
-    spaceOffset = 25;
-    rotateOffset = 25;
-    strafeOffset = 25;
-    radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
-    if (robot.getY()-spacestation.getY()<0) {
-      radDir*=-1;
-    }
-    if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())>screenSize/2) {
-      int x = (int)(Math.random()*1000);
-      if (x%250==0) {
-        fuel = 0;
-      }
-    }
-    //robot.myPointDirection=radDir*180/(Math.PI);
-    fill(255);
-    text((int)(radDir*180/(Math.PI)), 50, 10);
-
-    double dRadians = (robot.myPointDirection)*(Math.PI/180);
-    fill(255, 0, 0);
-    translate((float)robot.myCenterX, (float)robot.myCenterY);
-    rotate((float)dRadians);
-    ellipse(-7, -3, 10, 2);
-    ellipse(-7, 3, 10, 2);
-    resetMatrix();
-    robot.accelerate(maxTorque, 0);
-    noStroke();
-    fill(0, 50);
-    //double dRadians = robot.myPointDirection*(Math.PI/180);                 
-    int xRotatedTranslated, yRotatedTranslated;    
-    beginShape();         
-    for (int nI = 0; nI < robot.corners; nI++)    
-    {     
-      //rotate and translate the coordinates of the floater using current direction 
-      xRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.cos(dRadians)) - (robot.yCorners[nI]*2 * Math.sin(dRadians))+robot.myCenterX);     
-      yRotatedTranslated = (int)((robot.xCorners[nI]*2 * Math.sin(dRadians)) + (robot.yCorners[nI]*2 * Math.cos(dRadians))+robot.myCenterY);      
-      vertex(xRotatedTranslated, yRotatedTranslated);
-    }   
-    endShape(CLOSE);
-    int rectSizeX = 50;
-    float barSize = (float)(robot.currentHealth/robot.maxHealth)*rectSizeX;
-    if (robot.currentHealth < robot.maxHealth) {
-      //rectangle
-      fill(0);
-      stroke(150);
-      strokeWeight(1);
-      rect((float)robot.getX()-rectSizeX/2, robot.getY()+10, rectSizeX+1, 6);
-      //bar
-      fill(255, 0, 0);
-      noStroke();
-      rect((float)robot.getX()+1-rectSizeX/2, robot.getY()+11, barSize, 5);
-    }
+    space = 200;
+    spaceOffset = (int)space/4;
+    rotateOffset = (int)space/8;
+    strafeOffset = (int)space/8;
   }
   public void reFuel() {
     robot.myColor = color(150, 250, 150);
     space = 100;
-    spaceOffset = 50;
-    rotateOffset = 25;
-    strafeOffset = 25;
+    spaceOffset = (int)space/4;
+    rotateOffset = (int)space/40;
+    strafeOffset = (int)space/40;
+    radDir1=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
     if (robot.getY()-spacestation.getY()<0) {
       radDir*=-1;
@@ -647,7 +603,7 @@ class RobotSpaceShipControl
       resetMatrix();
       robot.accelerate(maxTorque, 0);
     }
-    if ((abs((float)robot.myDirectionX)+abs((float)robot.myDirectionY))<topSpeed&&abs((float)(robot.myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<space-spaceOffset) { //s
+    if ((abs((float)robot.myDirectionX)+abs((float)robot.myDirectionY))<topSpeed&&abs((float)(robot.myPointDirection-(radDir*180/(Math.PI))))>90&&dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())>space+spaceOffset) { //s
       double dRadiansR = (robot.myPointDirection+30)*(Math.PI/180);
       double dRadiansL = (robot.myPointDirection-30)*(Math.PI/180);
       fill(255, 0, 0);
@@ -669,7 +625,7 @@ class RobotSpaceShipControl
       rotate((float)dRadiansR);
       ellipse(5, -9, 10, 2);
       resetMatrix();
-      robot.accelerate(maxTorque/1.5, -90);
+      robot.accelerate(maxTorque/10, -90);
     }
     if (robot.myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
       double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
@@ -678,9 +634,9 @@ class RobotSpaceShipControl
       rotate((float)dRadiansL);
       ellipse(5, 9, 10, 2);
       resetMatrix();
-      robot.accelerate(maxTorque/1.5, 90);
+      robot.accelerate(maxTorque/10, 90);
     }
-    if (robot.myPointDirection-(radDir*180/(Math.PI))<-rotateOffset) { //d
+    if (robot.myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset&&dist(ship.getX(), ship.getY(), robot.getX(), robot.getY())<space*5-spaceOffset) { //d
       double dRadiansL = (robot.myPointDirection-90)*(Math.PI/180);
       fill(255, 0, 0);
       translate((float)robot.myCenterX, (float)robot.myCenterY);
@@ -689,7 +645,7 @@ class RobotSpaceShipControl
       resetMatrix();
       robot.rotate(rotateSpeed);
     }
-    if (robot.myPointDirection-(radDir*180/(Math.PI))>rotateOffset) { //a
+    if (robot.myPointDirection-(radDir1*180/(Math.PI))>rotateOffset&&dist(ship.getX(), ship.getY(), robot.getX(), robot.getY())<space*5-spaceOffset) { //a
       double dRadiansR = (robot.myPointDirection+90)*(Math.PI/180);
       fill(255, 0, 0);
       translate((float)robot.myCenterX, (float)robot.myCenterY);
@@ -698,6 +654,10 @@ class RobotSpaceShipControl
       resetMatrix();
       robot.rotate(-rotateSpeed);
     }
+    if ((int)robotShootCool==0&&robot.myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/2) {
+      robotbullet.add(new RobotBullet(robot));
+      robotShootCool = robotShootCoolTime;
+    }//shoot
     //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
     //  currentFuel-=0.01;
     //}
@@ -732,9 +692,9 @@ class RobotSpaceShipControl
   public void control() {
     robot.myColor = color(250, 150, 150);
     space = 200;
-    spaceOffset = 50;
-    rotateOffset = 5;
-    strafeOffset = 25;
+    spaceOffset = (int)space/4;
+    rotateOffset = (int)space/40;
+    strafeOffset = (int)space/8;
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
@@ -809,7 +769,7 @@ class RobotSpaceShipControl
       resetMatrix();
       robot.rotate(-rotateSpeed);
     }
-    if ((int)robotShootCool==0&&robot.myPointDirection-(radDir*180/(Math.PI))<rotateOffset/2 &&(areaX != areaSize/2 || areaY != areaSize/2)) {
+    if ((int)robotShootCool==0&&robot.myPointDirection-(radDir*180/(Math.PI))<rotateOffset/2) {
       robotbullet.add(new RobotBullet(robot));
       robotShootCool = robotShootCoolTime;
     }//shoot
@@ -845,20 +805,22 @@ class RobotSpaceShipControl
 class RobotBullet extends Floater
 {
   protected double dRadians;
+  protected float bulletSize = bulletS;
   public RobotBullet(RobotSpaceShip x) {
     myCenterX = x.getX();
     myCenterY = x.getY();
     myPointDirection = x.getPointDirection();
     dRadians =myPointDirection*(Math.PI/180);
-    myDirectionX=10*Math.cos(dRadians) + x.getDirectionX();
-    myDirectionY=10*Math.sin(dRadians) + x.getDirectionY();
+    myDirectionX=bulletSpeed*Math.cos(dRadians) + x.getDirectionX();
+    myDirectionY=bulletSpeed*Math.sin(dRadians) + x.getDirectionY();
     myColor = color(255, 255, 0);
   }
   public void show()
   {
     noStroke();
     fill(myColor);
-    ellipse((int)myCenterX, (int)myCenterY, 2, 2);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
+    bulletSize+=bulletSpray;
   }
   public void setX(int x) {
     myCenterX = x;
@@ -972,6 +934,30 @@ class RobotSpaceShip extends Floater
     myDirectionY = myDirectionY/gravity; 
     robotAreaX = (float)((areaX)+((myCenterX-(screenSize/2))/screenSize));
     robotAreaY = (float)((areaY)+((myCenterY-(screenSize/2))/screenSize));
+    if ((int)robotAreaX == areaSize) {
+      if (robot.getX()>height+(((int)robotAreaX-areaX)*height)) {
+        robot.currentHealth-=abs((float)robot.getDirectionX());
+        robot.setDirectionX(-robot.getDirectionX());
+      }
+    }
+    if ((int)robotAreaX == 0) {
+      if (robot.getX()<0+(((int)robotAreaX-areaX)*height)) {
+        robot.currentHealth-=abs((float)robot.getDirectionX());
+        robot.setDirectionX(-robot.getDirectionX());
+      }
+    }
+    if ((int)robotAreaY == areaSize) {
+      if (robot.getY()>height+(((int)robotAreaY-areaY)*height)) {
+        robot.currentHealth-=abs((float)robot.getDirectionY());
+        robot.setDirectionY(-robot.getDirectionY());
+      }
+    }
+    if ((int)robotAreaY == 0) {
+      if (robot.getY()<0+(((int)robotAreaY-areaY)*height)) {
+        robot.currentHealth-=abs((float)robot.getDirectionY());
+        robot.setDirectionY(-robot.getDirectionY());
+      }
+    }
     //wrap around screen   
     //if (myCenterX+((robotAreaX-areaX)*screenSize)>height+((robotAreaX-areaX)*screenSize))
     //{     
@@ -1367,7 +1353,7 @@ class Fuel extends Gui
 class areaMap extends Gui
 {
   int aSize = 24;
-  float aX, aY, rX, rY;
+  float aX, aY, apX, apY, rX, rY, rpX, rpY;
   public areaMap() {
     rectY = 30;
     barSize = rectSizeX/aSize;
@@ -1390,18 +1376,26 @@ class areaMap extends Gui
     fill(150);
     noStroke();
     ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(areaSize/2*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(areaSize/2*7.24)+1.5, rectSizeX/areaSize, rectSizeX/areaSize);
-    //bar
+    //ship
     noFill();
     stroke(255);
+    strokeWeight(0.5);
     ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+aX+1.5, (float)rectY+(rectSizeX/areaSize/2)+aY+1.5, rectSizeX/areaSize, rectSizeX/areaSize);
-    fill(robot.myColor);
-    //robot
+    fill(ship.myColor);
     noStroke();
-    ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+rX+1.5, (float)rectY+(rectSizeX/areaSize/2)+rY+1.5, rectSizeX/areaSize, rectSizeX/areaSize);
-    aX = ((areaX+posX)*7.24);
-    aY = ((areaY+posY)*7.24);
-    rX = (robotAreaX*7.24);
-    rY = (robotAreaY*7.24);
+    ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+apX+1.5, (float)rectY+(rectSizeX/areaSize/2)+apY+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
+    //robot
+    fill(robot.myColor);
+    noStroke();
+    ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+rpX+1.5, (float)rectY+(rectSizeX/areaSize/2)+rpY+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
+    aX = ((areaX)*7.24);
+    aY = ((areaY)*7.24);
+    apX = ((areaX+posX)*7.24);
+    apY = ((areaY+posY)*7.24);
+    rX = (((int)robotAreaX+0.5)*7.24);
+    rY = (((int)robotAreaY+0.5)*7.24);
+    rpX = (robotAreaX*7.24);
+    rpY = (robotAreaY*7.24);
   }
 }
 
