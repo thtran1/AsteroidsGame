@@ -155,7 +155,7 @@ public void draw()
 
           for (int x = 0; x < bullet.size()-1; x++) {
             if (dist(bullet.get(x).getX(), bullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<10) {
-              asteroid.remove(i);
+              //asteroid.remove(i);
               //bullet.remove(x);
             }
           }
@@ -165,7 +165,7 @@ public void draw()
         for (int i = 0; i < asteroid.size(); i++) {
           for (int x = 0; x < robotbullet.size(); x++) {
             if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<10) {
-              asteroid.remove(i);
+              //asteroid.remove(i);
               //robotbullet.remove(x);
             }
           }
@@ -205,7 +205,7 @@ public void draw()
       text(areaX + " " + areaY, 10, 10);
       //stroke(255);
       //text("Speed: " + (int)abs((float)ship.myDirectionX)+(int)abs((float)ship.myDirectionY), 5, 10);
-    }else if ((int)health.currentHealth <= 0) {
+    } else if ((int)health.currentHealth <= 0) {
       gameStop = true;
     }
   }
@@ -1435,48 +1435,48 @@ class helpButton extends Gui
       stroke(0);
       fill(150, 200);
       //wasd
-      rect(160,160,40,40);
-      rect(200,160,40,40);
-      rect(240,160,40,40);
-      rect(160,200,40,40);
-      rect(200,200,40,40);
-      rect(240,200,40,40);
+      rect(160, 160, 40, 40);
+      rect(200, 160, 40, 40);
+      rect(240, 160, 40, 40);
+      rect(160, 200, 40, 40);
+      rect(200, 200, 40, 40);
+      rect(240, 200, 40, 40);
       //arrow keys
-      rect(height-200,160,40,40);
-      rect(height-240,160,40,40);
-      rect(height-280,160,40,40);
-      rect(height-200,200,40,40);
-      rect(height-240,200,40,40);
-      rect(height-280,200,40,40);
+      rect(height-200, 160, 40, 40);
+      rect(height-240, 160, 40, 40);
+      rect(height-280, 160, 40, 40);
+      rect(height-200, 200, 40, 40);
+      rect(height-240, 200, 40, 40);
+      rect(height-280, 200, 40, 40);
       //shoot
-      rect(160,300,120,40);
+      rect(160, 300, 120, 40);
       //hyperjump
-      rect(height-240,300,40,40);
+      rect(height-240, 300, 40, 40);
       //text
       textSize(20);
       fill(0);
-      textAlign(CENTER,CENTER);
-      text("MOVE",height/2,140);
-      text("SHOOT",220,280);
-      text("HYPERJUMP",height-220,280);
+      textAlign(CENTER, CENTER);
+      text("MOVE", height/2, 140);
+      text("SHOOT", 220, 280);
+      text("HYPERJUMP", height-220, 280);
       textSize(20);
-      text("Q",180,180);
-      text("W",220,180);
-      text("E",260,180);
-      text("A",180,220);
-      text("S",220,220);
-      text("D",260,220);
-      text("SPACE",220,320);
-      text("J",height-220,320);
-      text("OR", height/2,220);
-      text("E",height-180,180);
-      text("Q",height-260,180);
+      text("Q", 180, 180);
+      text("W", 220, 180);
+      text("E", 260, 180);
+      text("A", 180, 220);
+      text("S", 220, 220);
+      text("D", 260, 220);
+      text("SPACE", 220, 320);
+      text("J", height-220, 320);
+      text("OR", height/2, 220);
+      text("E", height-180, 180);
+      text("Q", height-260, 180);
       textSize(14);
-      text("UP",height-220,180);
+      text("UP", height-220, 180);
       textSize(10);
-      text("DOWN",height-220,220);
-      text("RIGHT",height-180,220);
-      text("LEFT",height-260,220);
+      text("DOWN", height-220, 220);
+      text("RIGHT", height-180, 220);
+      text("LEFT", height-260, 220);
     }
   }
 }
