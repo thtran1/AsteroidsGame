@@ -94,15 +94,15 @@ public void draw()
         spacestation.show();
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
         {
-          currentFuel += 0.1;
+          currentFuel += 1;
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
-          health.currentHealth += 0.1;
+          health.currentHealth += 1;
         }
         if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<25*spacestation.stationSize && robot.currentHealth < robot.maxHealth)
         {
-          robot.currentHealth += 0.1;
+          robot.currentHealth += 1;
         }
       }
       control.control(); //spaceship controls
