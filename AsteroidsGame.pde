@@ -7,6 +7,7 @@ float posY = screenSize/2;
 float robotAreaX = 11;
 float robotAreaY = 11;
 int currentLevel = 1;
+int points = 0;
 SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 SpaceShipControl control = new SpaceShipControl();
 RobotSpaceShip robot = new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
@@ -91,7 +92,7 @@ public void draw()
         spacestation.show();
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
         {
-          currentFuel += 0.1;
+          currentFuel += 0.2;
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
@@ -291,7 +292,7 @@ class SpaceShipControl
       shootCool = shootCoolTime;
     }
     if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
-      currentFuel-=0.01;
+      currentFuel-=0.05;
     }
     fill(0, 50);
     double dRadians = ship.myPointDirection*(Math.PI/180);                 
@@ -590,12 +591,13 @@ class RobotSpaceShipControl
     fill(0);
     rect(0, 0, width, height);
     randOffset = (Math.random()*0.5)-0.25;
+    points+=1;
     currentLevel+=1;
     gameStop = true;
     menu.men = 3;
   }
   public void reFuel() {
-    robot.myColor = color(150, 250, 150);
+    robot.myColor = color(250, 150, 150);
     space = 50;
     spaceOffset = (int)space/4;
     rotateOffset = (int)(space/(40+(currentLevel*randOffset)));
@@ -708,11 +710,11 @@ class RobotSpaceShipControl
   }
 
   public void control() {
-    robot.myColor = color(250, 150, 150);
+    robot.myColor = color(150, 250, 150);
     space = 200;
     spaceOffset = (int)space/4;
     rotateOffset = (int)(space/(8+(currentLevel*5*randOffset)));
-    strafeOffset = (int)(space/(8+currentLevel/randOffset));
+    strafeOffset = (int)(space/(8+(currentLevel/randOffset)));
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
@@ -1599,20 +1601,29 @@ class Menu
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
+      rect((width/2)-400, height-300, 200, 50);
+      rect((width/2)-100, height-300, 200, 50);
+      rect((width/2)+200, height-300, 200, 50);
       fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("LEVEL: " + currentLevel, width/2, 100);
       textSize(30);
+      text("POINTS: " + points, width/2, 140);
       text("CONTINUE", width/2, height-180);
+      text("FUEL+1", (width/2)-300, height-280);
+      text("HEALTH+1", (width/2), height-280);
+      text("DAMAGE+1", (width/2)+300, height-280);
+      //speed, health, bullet damage
+      
       if ((mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         gameStop = false;
         robotShootDamage = 1+(currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
         robot.currentHealth = robot.maxHealth;
-        robot.setX((int)((((areaSize/2)-abs((int)robotAreaX-areaX))*height)-(areaX*height)));
-        robot.setY((int)((((areaSize/2)-abs((int)robotAreaY-areaY))*height)-(areaY*height)));
+        robot.setX((int)(((abs((int)robotAreaX-areaX))*height)-(areaX*height)));
+        robot.setY((int)(((abs((int)robotAreaY-areaY))*height)-(areaY*height)));
       }
     }
   }
