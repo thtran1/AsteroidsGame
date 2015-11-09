@@ -96,11 +96,11 @@ public void draw()
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
-          health.currentHealth += 0.1;
+          health.currentHealth += 0.2;
         }
         if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<25*spacestation.stationSize && robot.currentHealth < robot.maxHealth)
         {
-          robot.currentHealth += 0.1;
+          robot.currentHealth += 0.2;
         }
       }
       control.control(); //spaceship controls
@@ -292,7 +292,7 @@ class SpaceShipControl
       shootCool = shootCoolTime;
     }
     if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
-      currentFuel-=0.05;
+      currentFuel-=0.02;
     }
     fill(0, 50);
     double dRadians = ship.myPointDirection*(Math.PI/180);                 
@@ -601,7 +601,7 @@ class RobotSpaceShipControl
     space = 50;
     spaceOffset = (int)space/4;
     rotateOffset = (int)(space/(40+(currentLevel*randOffset)));
-    strafeOffset = (int)(space/(40+(currentLevel/randOffset)));
+    strafeOffset = (int)(space/(40+(currentLevel*randOffset)));
     radDir1=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
     if (robot.getY()-spacestation.getY()<0) {
@@ -713,8 +713,8 @@ class RobotSpaceShipControl
     robot.myColor = color(150, 250, 150);
     space = 200;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)(space/(8+(currentLevel*5*randOffset)));
-    strafeOffset = (int)(space/(8+(currentLevel/randOffset)));
+    rotateOffset = (int)(space/(20+(currentLevel*5*randOffset)));
+    strafeOffset = (int)(space/(20+(currentLevel*randOffset)));
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
@@ -1611,19 +1611,97 @@ class Menu
       textSize(30);
       text("POINTS: " + points, width/2, 140);
       text("CONTINUE", width/2, height-180);
-      text("FUEL+1", (width/2)-300, height-280);
-      text("HEALTH+1", (width/2), height-280);
-      text("DAMAGE+1", (width/2)+300, height-280);
-      //speed, health, bullet damage
-      
-      if ((mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      textAlign(CENTER,CENTER);
+      textSize(12);
+      text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
+      text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
+      text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
+      //fuel, health, bullet damage
+      //fuel
+      if (mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+        points-=1;
+        fuel.maxFuel+=20;
+        noStroke();
+        fill(0, 0.0001);
+        rect(0, 0, width, height);
+        stroke(255);
+        rect((width/2)-100, height-200, 200, 50);
+        rect((width/2)-400, height-300, 200, 50);
+        rect((width/2)-100, height-300, 200, 50);
+        rect((width/2)+200, height-300, 200, 50);
+        fill(255);
+        textSize(50);
+        textAlign(CENTER, CENTER);
+        text("LEVEL: " + currentLevel, width/2, 100);
+        textSize(30);
+        text("POINTS: " + points, width/2, 140);
+        text("CONTINUE", width/2, height-180);
+        textAlign(CENTER,CENTER);
+        textSize(12);
+        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
+        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
+        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
+      }
+      if (mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+        points-=1;
+        health.maxHealth+=10;
+        noStroke();
+        fill(0, 0.0001);
+        rect(0, 0, width, height);
+        stroke(255);
+        rect((width/2)-100, height-200, 200, 50);
+        rect((width/2)-400, height-300, 200, 50);
+        rect((width/2)-100, height-300, 200, 50);
+        rect((width/2)+200, height-300, 200, 50);
+        fill(255);
+        textSize(50);
+        textAlign(CENTER, CENTER);
+        text("LEVEL: " + currentLevel, width/2, 100);
+        textSize(30);
+        text("POINTS: " + points, width/2, 140);
+        text("CONTINUE", width/2, height-180);
+        textAlign(CENTER,CENTER);
+        textSize(12);
+        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
+        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
+        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
+      }
+      if (mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+        points-=1;
+        shootDamage+=0.5;
+        noStroke();
+        fill(0, 0.0001);
+        rect(0, 0, width, height);
+        stroke(255);
+        rect((width/2)-100, height-200, 200, 50);
+        rect((width/2)-400, height-300, 200, 50);
+        rect((width/2)-100, height-300, 200, 50);
+        rect((width/2)+200, height-300, 200, 50);
+        fill(255);
+        textSize(50);
+        textAlign(CENTER, CENTER);
+        text("LEVEL: " + currentLevel, width/2, 100);
+        textSize(30);
+        text("POINTS: " + points, width/2, 140);
+        text("CONTINUE", width/2, height-180);
+        textAlign(CENTER,CENTER);
+        textSize(12);
+        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
+        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
+        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
+      }
+      if (mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50) {
+        int randX = (int)Math.random()*areaSize;
+        int randY = (int)Math.random()*areaSize;
         gameStop = false;
         robotShootDamage = 1+(currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
         robot.currentHealth = robot.maxHealth;
-        robot.setX((int)(((abs((int)robotAreaX-areaX))*height)-(areaX*height)));
-        robot.setY((int)(((abs((int)robotAreaY-areaY))*height)-(areaY*height)));
+        robot.setX(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
+        robot.setY(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
+        robotAreaX = (float)((areaX)+((robot.myCenterX-(screenSize/2))/screenSize));
+        robotAreaY = (float)((areaY)+((robot.myCenterY-(screenSize/2))/screenSize));
       }
     }
   }
