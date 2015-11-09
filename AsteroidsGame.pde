@@ -25,7 +25,7 @@ areaMap map = new areaMap();
 helpButton help = new helpButton();
 Menu menu = new Menu();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
-double gravity = 1.025;
+double gravity = 1.015;
 double maxTorque = 0.2;
 int rotateSpeed = 1;
 int topSpeed = 10;
@@ -37,8 +37,7 @@ int shootCoolTime = 5; //delay bullets
 double shootDamage = 5;
 int robotShootCool = 0;
 int robotShootCoolTime = 5;
-double robotShootDamage = 1;
-double randOffset = (Math.random()*0.25)-0.125;
+double robotShootDamage = 1+(currentLevel/5);
 float currentFuel = 100;
 boolean wPressed = false;
 boolean aPressed = false;
@@ -48,6 +47,7 @@ boolean qPressed = false;
 boolean ePressed = false;
 boolean jPressed = false;
 boolean pPressed = false;
+boolean cPressed = false;
 boolean spacePressed = false;
 boolean gameStop = true;
 
@@ -92,15 +92,15 @@ public void draw()
         spacestation.show();
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
         {
-          currentFuel += 0.2;
+          currentFuel += 0.002*fuel.maxFuel;
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
-          health.currentHealth += 0.2;
+          health.currentHealth += 0.001*health.maxHealth;
         }
         if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<25*spacestation.stationSize && robot.currentHealth < robot.maxHealth)
         {
-          robot.currentHealth += 0.2;
+          robot.currentHealth += 0.001*robot.maxHealth;
         }
       }
       control.control(); //spaceship controls
@@ -192,7 +192,6 @@ public void draw()
         fill(0);
         rect(0, 0, width, height);
         robotcontrol.nextLevel();//robot spaceship controls
-        //text("Need Health", 50, 300);
       }
     } else if ((int)health.currentHealth <= 0) {
       noStroke();
@@ -590,7 +589,6 @@ class RobotSpaceShipControl
     noStroke();
     fill(0);
     rect(0, 0, width, height);
-    randOffset = (Math.random()*0.5)-0.25;
     points+=1;
     currentLevel+=1;
     gameStop = true;
@@ -600,8 +598,8 @@ class RobotSpaceShipControl
     robot.myColor = color(250, 150, 150);
     space = 50;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)(space/(40+(currentLevel*randOffset)));
-    strafeOffset = (int)(space/(40+(currentLevel*randOffset)));
+    rotateOffset = (int)(space/(40+(currentLevel)));
+    strafeOffset = (int)(space/(40+(currentLevel)));
     radDir1=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
     if (robot.getY()-spacestation.getY()<0) {
@@ -713,8 +711,8 @@ class RobotSpaceShipControl
     robot.myColor = color(150, 250, 150);
     space = 200;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)(space/(20+(currentLevel*5*randOffset)));
-    strafeOffset = (int)(space/(20+(currentLevel*randOffset)));
+    rotateOffset = (int)(space/(20+(currentLevel*4)));
+    strafeOffset = (int)(space/(20+(currentLevel*2)));
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
@@ -877,8 +875,8 @@ class RobotBullet extends Floater
 
 class RobotSpaceShip extends Floater  
 {   
-  protected float currentHealth = 100;
-  protected float maxHealth = 100;
+  protected float currentHealth = 100+(currentLevel*2.5);
+  protected float maxHealth = 100+(currentLevel*2.5);
   protected double intX = screenSize;
   protected double intY = screenSize;
   protected int spaceShipSize = 1;
@@ -1368,6 +1366,7 @@ class Fuel extends Gui
   }
   public void interaction() {
     barSize = (currentFuel/maxFuel)*rectSizeX;
+    fill(255);
     text("Level: " + currentLevel, height+(width-height)/2, 390);
   }
 }
@@ -1541,11 +1540,11 @@ class Menu
   }
   public void mainmenu() {
     noStroke();
-    fill(0, 0.0001);
+    fill(0, 0);
     rect(0, 0, width, height);
     if (men == 0) {
       noStroke();
-      fill(0, 0.0001);
+      fill(0, 0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1555,12 +1554,12 @@ class Menu
       text("ASTEROIDS", width/2, 100);
       textSize(30);
       text("PLAY", width/2, height-180);
-      if ((mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         gameStop = false;
       }
     } else if (men == 1) {
       noStroke();
-      fill(0, 0.0001);
+      fill(0, 0);
       rect(0, 0, height, height);
       stroke(255);
       rect((height/2)-100, height-200, 200, 50);
@@ -1570,12 +1569,12 @@ class Menu
       text("PAUSED", height/2, 100);
       textSize(30);
       text("RESUME", height/2, height-180);
-      if ((mousePressed&&mouseX>(width/2)-100&&mouseX<(height/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(height/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         gameStop = false;
       }
     } else if (men == 2) {
       noStroke();
-      fill(0, 0.0001);
+      fill(0, 0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1585,7 +1584,7 @@ class Menu
       text("GAME OVER", width/2, 100);
       textSize(30);
       text("AGAIN?", width/2, height-180);
-      if ((mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         gameStop = false;
         currentLevel = 1;
         robotShootDamage = 1;
@@ -1597,7 +1596,7 @@ class Menu
       }
     } else if (men == 3) {
       noStroke();
-      fill(0, 0.0001);
+      fill(0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1611,7 +1610,7 @@ class Menu
       textSize(30);
       text("POINTS: " + points, width/2, 140);
       text("CONTINUE", width/2, height-180);
-      textAlign(CENTER,CENTER);
+      textAlign(CENTER, CENTER);
       textSize(12);
       text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
       text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
@@ -1622,79 +1621,29 @@ class Menu
         points-=1;
         fuel.maxFuel+=20;
         noStroke();
-        fill(0, 0.0001);
+        fill(0);
         rect(0, 0, width, height);
-        stroke(255);
-        rect((width/2)-100, height-200, 200, 50);
-        rect((width/2)-400, height-300, 200, 50);
-        rect((width/2)-100, height-300, 200, 50);
-        rect((width/2)+200, height-300, 200, 50);
-        fill(255);
-        textSize(50);
-        textAlign(CENTER, CENTER);
-        text("LEVEL: " + currentLevel, width/2, 100);
-        textSize(30);
-        text("POINTS: " + points, width/2, 140);
-        text("CONTINUE", width/2, height-180);
-        textAlign(CENTER,CENTER);
-        textSize(12);
-        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
-        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
-        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
       }
       if (mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
         points-=1;
         health.maxHealth+=10;
         noStroke();
-        fill(0, 0.0001);
+        fill(0);
         rect(0, 0, width, height);
-        stroke(255);
-        rect((width/2)-100, height-200, 200, 50);
-        rect((width/2)-400, height-300, 200, 50);
-        rect((width/2)-100, height-300, 200, 50);
-        rect((width/2)+200, height-300, 200, 50);
-        fill(255);
-        textSize(50);
-        textAlign(CENTER, CENTER);
-        text("LEVEL: " + currentLevel, width/2, 100);
-        textSize(30);
-        text("POINTS: " + points, width/2, 140);
-        text("CONTINUE", width/2, height-180);
-        textAlign(CENTER,CENTER);
-        textSize(12);
-        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
-        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
-        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
       }
       if (mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
         points-=1;
         shootDamage+=0.5;
         noStroke();
-        fill(0, 0.0001);
+        fill(0, 0);
         rect(0, 0, width, height);
-        stroke(255);
-        rect((width/2)-100, height-200, 200, 50);
-        rect((width/2)-400, height-300, 200, 50);
-        rect((width/2)-100, height-300, 200, 50);
-        rect((width/2)+200, height-300, 200, 50);
-        fill(255);
-        textSize(50);
-        textAlign(CENTER, CENTER);
-        text("LEVEL: " + currentLevel, width/2, 100);
-        textSize(30);
-        text("POINTS: " + points, width/2, 140);
-        text("CONTINUE", width/2, height-180);
-        textAlign(CENTER,CENTER);
-        textSize(12);
-        text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
-        text("HEALTH+10\nHEALTH: "+health.maxHealth, (width/2), height-280);
-        text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
       }
-      if (mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50) {
+      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         int randX = (int)Math.random()*areaSize;
         int randY = (int)Math.random()*areaSize;
         gameStop = false;
         robotShootDamage = 1+(currentLevel/5);
+        robot.maxHealth = 100+(currentLevel*2.5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
         robot.currentHealth = robot.maxHealth;
@@ -1737,6 +1686,9 @@ public void keyPressed()
   if (keyCode == 'P') {
     pPressed = true;
   }
+  if (keyCode == 'C') {
+    cPressed = true;
+  }
 }
 
 public void keyReleased() {
@@ -1773,5 +1725,8 @@ public void keyReleased() {
   }
   if (keyCode == 'P') {
     pPressed = false;
+  }
+  if (keyCode == 'C') {
+    cPressed = false;
   }
 }
