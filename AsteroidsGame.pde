@@ -711,8 +711,8 @@ class RobotSpaceShipControl
     robot.myColor = color(150, 250, 150);
     space = 200;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)(space/(8+(currentLevel*4)));
-    strafeOffset = (int)(space/(8+(currentLevel*2)));
+    rotateOffset = (int)(space/(16+(currentLevel*4)));
+    strafeOffset = (int)(space/(16+(currentLevel*2)));
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
