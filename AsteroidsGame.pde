@@ -160,13 +160,13 @@ public void draw()
         }
       }
       for (int x = 0; x < bullet.size(); x++) {
-        if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.getX(), robot.getY()) < 10+bullet.get(x).bulletSize/2) {
+        if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.getX(), robot.getY()) < 15+bullet.get(x).bulletSize/2) {
           robot.currentHealth-=shootDamage;
           bullet.remove(x);
         }
       }
       for (int x = 0; x < robotbullet.size(); x++) {
-        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 10+robotbullet.get(x).bulletSize/2) {
+        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize/2) {
           health.currentHealth-=robotShootDamage;
           robotbullet.remove(x);
         }
@@ -697,6 +697,7 @@ class RobotSpaceShipControl
       stroke(150);
       strokeWeight(1);
       rect((float)robot.getX()-rectSizeX/2, robot.getY()+10, rectSizeX+1, 6);
+      strokeWeight(0.5);
       //bar
       fill(255, 0, 0);
       noStroke();
@@ -809,6 +810,7 @@ class RobotSpaceShipControl
       stroke(150);
       strokeWeight(1);
       rect((float)robot.getX()-rectSizeX/2, robot.getY()+10, rectSizeX+1, 6);
+      strokeWeight(0.5);
       //bar
       fill(255, 0, 0);
       noStroke();
@@ -1605,7 +1607,7 @@ class Menu
         gameStop = false;
         robotShootDamage = 1+(currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
-        currentFuel = (fuel.maxFuel-currentFuel)/4;
+        currentFuel += (fuel.maxFuel-currentFuel)/4;
         robot.currentHealth = robot.maxHealth;
         robot.setX((int)((((areaSize/2)-abs((int)robotAreaX-areaX))*height)-(areaX*height)));
         robot.setY((int)((((areaSize/2)-abs((int)robotAreaY-areaY))*height)-(areaY*height)));
