@@ -24,7 +24,7 @@ areaMap map = new areaMap();
 helpButton help = new helpButton();
 Menu menu = new Menu();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
-double gravity = 1.015;
+double gravity = 1.025;
 double maxTorque = 0.2;
 int rotateSpeed = 1;
 int topSpeed = 10;
@@ -37,6 +37,7 @@ double shootDamage = 5;
 int robotShootCool = 0;
 int robotShootCoolTime = 5;
 double robotShootDamage = 1;
+double randOffset = (Math.random()*0.25)-0.125;
 float currentFuel = 100;
 boolean wPressed = false;
 boolean aPressed = false;
@@ -94,11 +95,11 @@ public void draw()
         }
         if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
         {
-          health.currentHealth += 0.2;
+          health.currentHealth += 0.1;
         }
         if (dist(spacestation.getX(), spacestation.getY(), robot.getX(), robot.getY())<25*spacestation.stationSize && robot.currentHealth < robot.maxHealth)
         {
-          robot.currentHealth += 0.2;
+          robot.currentHealth += 0.1;
         }
       }
       control.control(); //spaceship controls
@@ -588,16 +589,17 @@ class RobotSpaceShipControl
     noStroke();
     fill(0);
     rect(0, 0, width, height);
+    randOffset = (Math.random()*0.5)-0.25;
     currentLevel+=1;
     gameStop = true;
     menu.men = 3;
   }
   public void reFuel() {
     robot.myColor = color(150, 250, 150);
-    space = 100;
+    space = 50;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)space/(40+currentLevel);
-    strafeOffset = (int)space/(40+currentLevel);
+    rotateOffset = (int)(space/(40+(currentLevel*randOffset)));
+    strafeOffset = (int)(space/(40+(currentLevel/randOffset)));
     radDir1=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     radDir=Math.asin((spacestation.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
     if (robot.getY()-spacestation.getY()<0) {
@@ -709,8 +711,8 @@ class RobotSpaceShipControl
     robot.myColor = color(250, 150, 150);
     space = 200;
     spaceOffset = (int)space/4;
-    rotateOffset = (int)space/(8+(currentLevel*5));
-    strafeOffset = (int)space/(8+currentLevel);
+    rotateOffset = (int)(space/(8+(currentLevel*5*randOffset)));
+    strafeOffset = (int)(space/(8+currentLevel/randOffset));
     radDir=Math.asin((ship.getX()-robot.getX())/(dist((float)robot.getX(), (float)robot.getY(), ship.getX(), ship.getY())))-Math.PI/2;
     if (robot.getY()-ship.getY()<0) {
       radDir*=-1;
