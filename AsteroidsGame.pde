@@ -1460,6 +1460,8 @@ class helpButton extends Gui
       rect(height-280, 200, 40, 40);
       //shoot
       rect(160, 300, 120, 40);
+      //pause
+      rect((height/2)-20, 300, 40, 40);
       //hyperjump
       rect(height-240, 300, 40, 40);
       //text
@@ -1468,6 +1470,7 @@ class helpButton extends Gui
       textAlign(CENTER, CENTER);
       text("MOVE", height/2, 140);
       text("SHOOT", 220, 280);
+      text("PAUSE", (height/2), 280);
       text("HYPERJUMP", height-220, 280);
       textSize(20);
       text("Q", 180, 180);
@@ -1477,6 +1480,7 @@ class helpButton extends Gui
       text("S", 220, 220);
       text("D", 260, 220);
       text("SPACE", 220, 320);
+      text("P", height/2, 320);
       text("J", height-220, 320);
       text("OR", height/2, 220);
       text("E", height-180, 180);
@@ -1487,6 +1491,9 @@ class helpButton extends Gui
       text("DOWN", height-220, 220);
       text("RIGHT", height-180, 220);
       text("LEFT", height-260, 220);
+      textSize(12);
+      textAlign(CENTER, TOP);
+      text("Shoot the enemy spaceship and avoid death.\nAttempting to leave the boundaries of the map will result in ship damage.\nThe middle of the spaceship will repair and refuel you.", height/2, 360);
     }
   }
 }
@@ -1524,7 +1531,7 @@ class Menu
 {
   protected int men;
   Menu() {
-    men = 0;//0=main menu 1=pause 2=game over 3=next level
+    men = 0;//0=main menu 1=pause 2=game over 3=next level 4=help from main menu
   }
   public void mainmenu() {
     noStroke();
@@ -1536,7 +1543,7 @@ class Menu
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
-      fill(255, 1);
+      fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("ASTEROIDS", width/2, 100);
@@ -1551,7 +1558,7 @@ class Menu
       rect(0, 0, height, height);
       stroke(255);
       rect((height/2)-100, height-200, 200, 50);
-      fill(255, 1);
+      fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("PAUSED", height/2, 100);
@@ -1566,7 +1573,7 @@ class Menu
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
-      fill(255, 1);
+      fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("GAME OVER", width/2, 100);
@@ -1588,7 +1595,7 @@ class Menu
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
-      fill(255, 1);
+      fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("LEVEL: " + currentLevel, width/2, 100);
