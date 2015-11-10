@@ -1680,7 +1680,7 @@ class Menu
     } else if (men == 2) {
       noStroke();
       fill(menuFlash*2.55, 0, 0);
-      menuFlash-=0.5;
+      menuFlash-=0.1;
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
