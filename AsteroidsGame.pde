@@ -58,7 +58,7 @@ boolean gameStop = true;
 public void setup() 
 {
   size(900, 700);
-  //background(0);
+  background(0);
   screenSize = height;
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
@@ -1765,7 +1765,7 @@ class Menu
     rect(0, 0, width, height);
     if (men == 0) {
       noStroke();
-      fill(0, 0);
+      fill(0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1782,7 +1782,7 @@ class Menu
     } else if (men == 4) {
       //menuFlash+=0.1;
       noStroke();
-      fill(0, 0);
+      fill(0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1858,7 +1858,7 @@ class Menu
     } else if (men == 1) {
       noStroke();
       menuFlash-=100;
-      fill(0, 0);
+      fill(0);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
       fill(255);
