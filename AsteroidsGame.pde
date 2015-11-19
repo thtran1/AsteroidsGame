@@ -10,12 +10,13 @@ SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 SpaceShipControl control = new SpaceShipControl();
 //RobotSpaceShip robot = new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
 ArrayList <RobotSpaceShip> robot = new ArrayList <RobotSpaceShip>();
-FloatList rAX, rAY;
 SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 //Asteroid[] asteroid = new Asteroid[50];
 ArrayList <Bullet> bullet = new ArrayList <Bullet>();
 ArrayList <RobotBullet> robotbullet = new ArrayList <RobotBullet>();
 ArrayList <Asteroid> asteroid;
+ArrayList <Float> rAX;
+ArrayList <Float> rAY;
 FuelCan fuelcan = new FuelCan();
 HyperJump hyperjump = new HyperJump();
 Speed speed = new Speed();
@@ -64,15 +65,15 @@ public void setup()
     stars[i] = new Star();
   }
   asteroid = new ArrayList <Asteroid>();
-  rAX = new FloatList();
-  rAY = new FloatList();
+  rAX = new ArrayList <Float>();
+  rAY = new ArrayList <Float>();
   for (int i = 0; i < 10; i++) {
     asteroid.add(new Asteroid());
   }
   for (int i = 0; i < 1; i++) {
     robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-    rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
-    rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+    rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+    rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
   }
   robotsAlive = robot.size();
   intRobotsAlive = robot.size();
@@ -1102,7 +1103,7 @@ class SpaceStation extends Floater
     translate((float)myCenterX, (float)myCenterY);
     //rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
     //rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
-    fill(150+addHealth, 150+addHealth/2, 150+addHealth/2);
+    fill(150-addHealth/2, 150+addHealth, 150-addHealth/2);
     ellipse(0, 0, 100*stationSize, 100*stationSize);
     resetMatrix();
     myPointDirection+=speedRotation;
@@ -1895,8 +1896,8 @@ class Menu
         intRobotsAlive=1;
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-          rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
-          rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+          rAX.add(i,(float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.add(i,(float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
         }
         bulletCoolDownMax = 10;
         bulletCoolDown = 10;
@@ -1979,8 +1980,8 @@ class Menu
         intRobotsAlive+=1;
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-          rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
-          rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+          rAX.add(i,(float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.add(i,(float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
         }
         bulletCoolDown = bulletCoolDownMax;
         robotShootDamage = 1+(currentLevel/5);
