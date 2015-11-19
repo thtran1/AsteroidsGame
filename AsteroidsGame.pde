@@ -245,7 +245,6 @@ public void draw()
       //fill(255,0,0,-200);
       rect(-100, -100, screenSize+100, screenSize+100);
       fill(255);
-      text((int)fuelcan.getX() + " " + (int)fuelcan.getY(),100,100);
     } else if ((int)health.currentHealth <= 0) {
       for (int i = 0; i<robot.size(); i++) {
         robot.remove(i);
@@ -1540,7 +1539,7 @@ class Fuel extends Gui
     textAlign(CENTER, CENTER);
     textSize(30);
     fill(255, ((maxFuel-currentFuel)-(maxFuel/2))*10);
-    text("FUEL LOW. RETURN TO SPACESTATION.", height/2, 50);
+    text("FUEL LOW. FIND FUEL CANNISTERS.", height/2, 50);
     textSize(12);
     resetMatrix();
     barSize = (currentFuel/maxFuel)*rectSizeX;
