@@ -149,6 +149,7 @@ public void draw()
             currentFuel=fuel.maxFuel;
             addFuel = 50;
           }
+          fuelcan.reset();
         }
       }
       if (fuelcan.isTouched == false) {
@@ -243,14 +244,8 @@ public void draw()
       fill(255, 0, 0, ((health.maxHealth-health.currentHealth)-(health.maxHealth/2))*2);
       //fill(255,0,0,-200);
       rect(-100, -100, screenSize+100, screenSize+100);
-      for (int i = 0; i<robot.size(); i++) {
-        // if ((int)robot.get(i).currentHealth<=0) {
-        //   noStroke();
-        //   fill(0);
-        //   rect(0, 0, width, height);
-        //   robot.get(i).nextLevel();//robot spaceship controls
-        // }
-      }
+      fill(255);
+      text((int)fuelcan.getX() + " " + (int)fuelcan.getY(),100,100);
     } else if ((int)health.currentHealth <= 0) {
       for (int i = 0; i<robot.size(); i++) {
         robot.remove(i);
@@ -515,7 +510,8 @@ class SpaceShip extends Floater
     {     
       areaX++;
       myCenterX = 0;
-      fuelcan.reset();
+      fuelcan.isTouched = false;
+      fuelcan.setX(fuelcan.getX()-screenSize);
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()-(screenSize));
@@ -537,7 +533,8 @@ class SpaceShip extends Floater
     {     
       areaX--;
       myCenterX = screenSize;
-      fuelcan.reset();
+      fuelcan.isTouched = false;
+      fuelcan.setX(fuelcan.getX()+screenSize);
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()+(screenSize));
@@ -560,7 +557,8 @@ class SpaceShip extends Floater
     {    
       areaY++;
       myCenterY = 0;
-      fuelcan.reset();
+      fuelcan.isTouched = false;
+      fuelcan.setY(fuelcan.getY()-screenSize);
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()-(screenSize));
@@ -582,7 +580,8 @@ class SpaceShip extends Floater
     {     
       areaY--;
       myCenterY = screenSize;
-      fuelcan.reset();
+      fuelcan.isTouched = false;
+      fuelcan.setY(fuelcan.getY()+screenSize);
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()+(screenSize));
@@ -1103,7 +1102,7 @@ class SpaceStation extends Floater
     translate((float)myCenterX, (float)myCenterY);
     //rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
     //rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
-    fill(150-addHealth/2, 150+addHealth, 150-addHealth/2);
+    fill(150+addHealth, 150-addHealth/2, 150-addHealth/2);
     ellipse(0, 0, 100*stationSize, 100*stationSize);
     resetMatrix();
     myPointDirection+=speedRotation;
@@ -1179,14 +1178,14 @@ class FuelCan extends Floater
     myCenterY += myDirectionY;     
     myPointDirection +=speedRotation;
     //wrap around screen    
-    if (myCenterX >width+screenSize)
+    if (myCenterX >height+screenSize)
     {   
       reset();
       myCenterX = -screenSize;
     } else if (myCenterX<-screenSize)
     {   
       reset();
-      myCenterX = width+screenSize;
+      myCenterX = height+screenSize;
     }    
     if (myCenterY >height+screenSize)
     {    
