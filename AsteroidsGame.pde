@@ -58,7 +58,7 @@ boolean gameStop = true;
 public void setup() 
 {
   size(900, 700);
-  background(0);
+  //background(0);
   screenSize = height;
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
