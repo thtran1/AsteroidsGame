@@ -38,8 +38,6 @@ float bulletSpray = 0;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
 double shootDamage = 10;
-//int robotShootCool = 0;
-//int robotShootCoolTime = 5;
 double robotShootDamage = 1+(currentLevel/5);
 int robotsAlive, intRobotsAlive;
 float currentFuel = fuel.maxFuel;
@@ -65,9 +63,6 @@ public void setup()
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star();
   }
-  //for (int i = 0; i < asteroid.size(); i++) {
-  //  asteroid = new Asteroid();
-  //}
   asteroid = new ArrayList <Asteroid>();
   rAX = new FloatList();
   rAY = new FloatList();
@@ -100,11 +95,6 @@ public void draw()
       for (int i = 0; i < stars.length; i++) {
         stars[i].show();
       }
-      //if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
-      //{
-      //  currentFuel += 0.002*fuel.maxFuel;
-      //  fuel.barColor = color(200);
-      //}
       if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<50*spacestation.stationSize)
       {
         if (health.currentHealth < health.maxHealth) {
@@ -145,22 +135,6 @@ public void draw()
       for (int i = 0; i < asteroid.size(); i++) {
         asteroid.get(i).show();
         asteroid.get(i).move();
-        //for (int x = 0; x < bullet.size(); x++) {
-        //  if (dist(bullet.get(x).getX(), bullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
-        //    //asteroid.remove(i);
-        //    //bullet.remove(x);
-        //    break;
-        //  }
-        //}
-        //for (int x = 0; x < robotbullet.size(); x++) {
-        //  if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
-        //    //asteroid.remove(i);
-        //    //robotbullet.remove(x);
-        //    break;
-        //  }
-        //  break;
-        //}
-        ////break;
       }
 
       if (dist(fuelcan.getX(), fuelcan.getY(), ship.getX(), ship.getY())<40) {
@@ -1803,10 +1777,10 @@ class Menu
       text("PLAY", width/2, height-180);
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=10;
-        gameStop = false;
+        men = 4;
       }
     } else if (men == 4) {
-      menuFlash+=0.1;
+      //menuFlash+=0.1;
       noStroke();
       fill(0, 0);
       rect(0, 0, width, height);
