@@ -1765,7 +1765,7 @@ class Menu
     rect(0, 0, width, height);
     if (men == 0) {
       noStroke();
-      fill(0);
+      fill(0, 0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1779,10 +1779,11 @@ class Menu
         menuFlash=10;
         men = 4;
       }
-    } else if (men == 4) {
+    }
+    if (men == 4) {
       //menuFlash+=0.1;
       noStroke();
-      fill(0);
+      fill(0, 0);
       rect(0, 0, width, height);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
@@ -1855,10 +1856,11 @@ class Menu
         menuFlash=100;
         gameStop = false;
       }
-    } else if (men == 1) {
+    }
+    if (men == 1) {
       noStroke();
       menuFlash-=100;
-      fill(0);
+      fill(0, 0);
       stroke(255);
       rect((width/2)-100, height-200, 200, 50);
       fill(255);
@@ -1871,7 +1873,8 @@ class Menu
         menuFlash=100;
         gameStop = false;
       }
-    } else if (men == 2) {
+    }
+    if (men == 2) {
       noStroke();
       fill(menuFlash*2.55, 0, 0);
       menuFlash-=0.1;
@@ -1910,7 +1913,8 @@ class Menu
         // robot.setX((int)((((areaSize/2)-abs((int)robotAreaX-areaX))*height)-(areaX*height)));
         // robot.setY((int)((((areaSize/2)-abs((int)robotAreaY-areaY))*height)-(areaY*height)));
       }
-    } else if (men == 3) {
+    }
+    if (men == 3) {
       noStroke();
       fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
       menuFlash-=1;
