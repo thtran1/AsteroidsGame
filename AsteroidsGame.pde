@@ -10,11 +10,13 @@ SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 SpaceShipControl control = new SpaceShipControl();
 //RobotSpaceShip robot = new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
 ArrayList <RobotSpaceShip> robot = new ArrayList <RobotSpaceShip>();
+FloatList rAX, rAY;
 SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 //Asteroid[] asteroid = new Asteroid[50];
 ArrayList <Bullet> bullet = new ArrayList <Bullet>();
 ArrayList <RobotBullet> robotbullet = new ArrayList <RobotBullet>();
 ArrayList <Asteroid> asteroid;
+FuelCan fuelcan = new FuelCan();
 HyperJump hyperjump = new HyperJump();
 Speed speed = new Speed();
 Health health = new Health();
@@ -35,11 +37,14 @@ float bulletS = 2;
 float bulletSpray = 0;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
-double shootDamage = 5;
-int robotShootCool = 0;
-int robotShootCoolTime = 5;
+double shootDamage = 10;
+//int robotShootCool = 0;
+//int robotShootCoolTime = 5;
 double robotShootDamage = 1+(currentLevel/5);
+int robotsAlive, intRobotsAlive;
 float currentFuel = fuel.maxFuel;
+float addFuel = 0;
+float addHealth = 0;
 boolean wPressed = false;
 boolean aPressed = false;
 boolean sPressed = false;
@@ -64,12 +69,18 @@ public void setup()
   //  asteroid = new Asteroid();
   //}
   asteroid = new ArrayList <Asteroid>();
-  for (int i = 0; i < 50; i++) {
+  rAX = new FloatList();
+  rAY = new FloatList();
+  for (int i = 0; i < 10; i++) {
     asteroid.add(new Asteroid());
   }
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 1; i++) {
     robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
+    rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+    rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
   }
+  robotsAlive = robot.size();
+  intRobotsAlive = robot.size();
 }
 
 public void draw() 
@@ -89,76 +100,107 @@ public void draw()
       for (int i = 0; i < stars.length; i++) {
         stars[i].show();
       }
-      if (areaX == areaSize/2 && areaY == areaSize/2) {
-        spacestation.show();
-      }
-      if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
+      //if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && currentFuel < fuel.maxFuel)
+      //{
+      //  currentFuel += 0.002*fuel.maxFuel;
+      //  fuel.barColor = color(200);
+      //}
+      if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<50*spacestation.stationSize)
       {
-        currentFuel += 0.002*fuel.maxFuel;
-        fuel.barColor = color(200);
-      }
-      if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<25*spacestation.stationSize && health.currentHealth < health.maxHealth)
-      {
-        health.currentHealth += 0.001*health.maxHealth;
-        health.barColor = color(255, 150, 150);
+        if (health.currentHealth < health.maxHealth) {
+          health.currentHealth += 0.001*health.maxHealth;
+          health.barColor = color(255, 150, 150);
+        }
+        if (addHealth<50) {
+          addHealth+=1;
+        }
       }
       for (int i = 0; i<robot.size(); i++) {
-        if (dist(spacestation.getX(), spacestation.getY(), robot.get(i).getX(), robot.get(i).getY())<25*spacestation.stationSize && robot.get(i).currentHealth < robot.get(i).maxHealth)
+        if (dist(spacestation.getX(), spacestation.getY(), robot.get(i).getX(), robot.get(i).getY())<50*spacestation.stationSize)
         {
-          robot.get(i).currentHealth += 0.001*robot.get(i).maxHealth;
+          if (robot.get(i).currentHealth < robot.get(i).maxHealth && robot.get(i).currentHealth>0) {
+            robot.get(i).currentHealth += 0.001*robot.get(i).maxHealth;
+          }
+          if (addHealth<50) {
+            addHealth+=1;
+          }
         }
+      }
+      if (addHealth>0) {
+        addHealth-=0.5;
       }
       if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())>25*spacestation.stationSize) {
         fuel.barColor = color(100);
         health.barColor = color(255, 0, 0);
       }
+      if ((int)shootCool>0) {
+        shootCool-=1;
+      }
+      for (int i = 0; i <robot.size(); i++) {
+        if ((int)robot.get(i).robotShootCool>0) {
+          robot.get(i).robotShootCool-=1;
+        }
+      }
+      //if (areaX != areaSize/2 || areaY != areaSize/2) {
+      for (int i = 0; i < asteroid.size(); i++) {
+        asteroid.get(i).show();
+        asteroid.get(i).move();
+        //for (int x = 0; x < bullet.size(); x++) {
+        //  if (dist(bullet.get(x).getX(), bullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
+        //    //asteroid.remove(i);
+        //    //bullet.remove(x);
+        //    break;
+        //  }
+        //}
+        //for (int x = 0; x < robotbullet.size(); x++) {
+        //  if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
+        //    //asteroid.remove(i);
+        //    //robotbullet.remove(x);
+        //    break;
+        //  }
+        //  break;
+        //}
+        ////break;
+      }
+
+      if (dist(fuelcan.getX(), fuelcan.getY(), ship.getX(), ship.getY())<40) {
+        fuelcan.isTouched = true;
+        if (currentFuel<fuel.maxFuel) {
+          if (currentFuel<fuel.maxFuel-(fuel.maxFuel/4)) {
+            currentFuel+=fuel.maxFuel/4;
+            addFuel = 50;
+          }
+          if (currentFuel>fuel.maxFuel-(fuel.maxFuel/4)) {
+            currentFuel=fuel.maxFuel;
+            addFuel = 50;
+          }
+        }
+      }
+      if (fuelcan.isTouched == false) {
+        fuelcan.show();
+        fuelcan.move();
+      }
+      //}
+      if (areaX == areaSize/2 && areaY == areaSize/2) {
+        spacestation.show();
+      }
       for (int i = 0; i<bullet.size(); i++) {
-        bullet.get(i).show();
         bullet.get(i).move();
+        bullet.get(i).show();
         if (abs(bullet.get(i).getX()-height/2)>=height/2||abs(bullet.get(i).getY()-height/2)>=height/2) {
           bullet.remove(i);
         }
       }
       for (int i = 0; i<robotbullet.size(); i++) {
-        robotbullet.get(i).show();
         robotbullet.get(i).move();
+        robotbullet.get(i).show();
         if (abs(robotbullet.get(i).getX()-height/2)>=height/2||abs(robotbullet.get(i).getY()-height/2)>=height/2) {
           robotbullet.remove(i);
         }
       }
-      if ((int)shootCool>0) {
-        shootCool-=1;
-      }
-      if ((int)robotShootCool>0) {
-        robotShootCool-=1;
-      }
-      if (areaX != areaSize/2 || areaY != areaSize/2) {
-        for (int i = 0; i < asteroid.size(); i++) {
-          asteroid.get(i).show();
-          asteroid.get(i).move();
-          for (int x = 0; x < bullet.size(); x++) {
-            if (dist(bullet.get(x).getX(), bullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
-              asteroid.remove(i);
-              bullet.remove(x);
-              break;
-            }
-          }
-        }
-      }
-      if (areaX != areaSize/2 || areaY != areaSize/2) {
-        for (int i = 0; i < asteroid.size(); i++) {
-          for (int x = 0; x < robotbullet.size(); x++) {
-            if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), asteroid.get(i).getX(), asteroid.get(i).getY())<asteroid.get(i).getAsteroidSize()+10) {
-              asteroid.remove(i);
-              robotbullet.remove(x);
-              break;
-            }
-          }
-        }
-      }
-      for (int x = 0; x < bullet.size(); x++) {
-        for (int i = 0; i < robot.size(); i++) {
-          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+bullet.get(x).bulletSize/2) {
+      for (int i = 0; i < robot.size(); i++) {
+        for (int x = 0; x <bullet.size(); x++) {
+          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+bullet.get(x).bulletSize) {
             robot.get(i).currentHealth-=shootDamage;
             bullet.remove(x);
             break;
@@ -166,24 +208,44 @@ public void draw()
         }
       }
       for (int x = 0; x < robotbullet.size(); x++) {
-        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize/2) {
+        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
           health.currentHealth-=robotShootDamage;
           robotbullet.remove(x);
         }
       }
       control.control(); //spaceship controls
       for (int i = 0; i < robot.size(); i++) {
-        if (robot.get(i).currentHealth > 0) {
+        if (robot.get(i).dead == false) {
+          if (robot.get(i).currentHealth<=0) {
+            robot.get(i).dead = true;
+            robot.get(i).myColor = 200;
+          }
           robot.get(i).reFuel();
           robot.get(i).control();
-          robot.get(i).show();
           robot.get(i).move();
-        }
-        else if (robot.get(i).currentHealth<=0) {
           robot.get(i).show();
-          robot.get(i).move();
-          robot.get(i).myColor = 0;
+          rAX.set(i, robot.get(i).getAreaX());
+          rAY.set(i, robot.get(i).getAreaY());
         }
+        if (robot.get(i).dead == true) {
+          robot.get(i).move();
+          robot.get(i).show();
+          robot.get(i).myColor-=1;
+          if (robot.get(i).myColor<50) {
+            robot.remove(i);
+            rAX.remove(i);
+            rAY.remove(i);
+          }
+        }
+      }
+      if (robot.size() == 0) {
+        noStroke();
+        fill(0);
+        rect(0, 0, width, height);
+        points+=1;
+        currentLevel+=1;
+        gameStop = true;
+        menu.men = 3;
       }
       ship.show();
       ship.move();
@@ -215,6 +277,11 @@ public void draw()
         // }
       }
     } else if ((int)health.currentHealth <= 0) {
+      for (int i = 0; i<robot.size(); i++) {
+        robot.remove(i);
+        rAX.remove(i);
+        rAY.remove(i);
+      }
       noStroke();
       fill(0);
       rect(0, 0, width, height);
@@ -310,7 +377,7 @@ class SpaceShipControl
     }
     if (spacePressed && (int)shootCool == 0) {
       if (bulletCoolDown > 0) {
-        bulletCoolDown-=0.2;
+        bulletCoolDown-=0.4;
         bullet.add(new Bullet(ship));
         shootCool = shootCoolTime;
       }
@@ -319,7 +386,7 @@ class SpaceShipControl
       }
     }
     if (bulletCoolDown<bulletCoolDownMax) {
-      bulletCoolDown+=0.02;
+      bulletCoolDown+=0.04;
     }
     if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
       currentFuel-=0.02;
@@ -359,6 +426,9 @@ class Bullet extends Floater
     fill(myColor);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
     bulletSize+=bulletSpray;
+    noStroke();
+    fill(150, 0, 0, 50);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize*5, bulletSize*5);
   }
   public void setX(int x) {
     myCenterX = x;
@@ -470,6 +540,7 @@ class SpaceShip extends Floater
     {     
       areaX++;
       myCenterX = 0;
+      fuelcan.reset();
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()-(screenSize));
@@ -491,6 +562,7 @@ class SpaceShip extends Floater
     {     
       areaX--;
       myCenterX = screenSize;
+      fuelcan.reset();
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()+(screenSize));
@@ -513,6 +585,7 @@ class SpaceShip extends Floater
     {    
       areaY++;
       myCenterY = 0;
+      fuelcan.reset();
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()-(screenSize));
@@ -534,6 +607,7 @@ class SpaceShip extends Floater
     {     
       areaY--;
       myCenterY = screenSize;
+      fuelcan.reset();
       for (int i = 0; i<robot.size(); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()+(screenSize));
@@ -618,8 +692,8 @@ class RobotBullet extends Floater
     myCenterY = y;
     myPointDirection = d+((Math.random()*6)-3);
     dRadians =myPointDirection*(Math.PI/180);
-    myDirectionX=bulletSpeed*Math.cos(dRadians) + dX - x;
-    myDirectionY=bulletSpeed*Math.sin(dRadians) + dY - y;
+    myDirectionX=bulletSpeed*Math.cos(dRadians) + dX - ship.getDirectionX();
+    myDirectionY=bulletSpeed*Math.sin(dRadians) + dY - ship.getDirectionY();
     myColor = color(255, 255, 0);
   }
   public void show()
@@ -628,6 +702,9 @@ class RobotBullet extends Floater
     fill(myColor);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
     bulletSize+=bulletSpray;
+    noStroke();
+    fill(150, 0, 0, 50);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize*5, bulletSize*5);
   }
   public void setX(int x) {
     myCenterX = x;
@@ -670,14 +747,17 @@ class RobotSpaceShip extends Floater
   protected int spaceShipSize = 1;
   protected double radDir =-Math.PI/2;
   protected double radDir1 =-Math.PI/2;
-  protected int space;
-  protected int spaceOffset;
-  protected int rotateOffset;
-  protected int strafeOffset;
+  protected int sp;
+  protected int spOffset;
+  protected int rotOffset;
+  protected int strOffset;
   protected float fuel;
   protected boolean needHealth;
   protected float robotAreaX = 11;
   protected float robotAreaY = 11;
+  protected boolean dead = false;
+  protected int robotShootCool = 0;
+  protected int robotShootCoolTime = 5;
   RobotSpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -722,10 +802,10 @@ class RobotSpaceShip extends Floater
     myPointDirection = 270;
     nDegreesOfRotation = 0;
     fuel = 10;
-    space = 200;
-    spaceOffset = (int)space/4;
-    rotateOffset = (int)space/8;
-    strafeOffset = (int)space/8;
+    sp = (int)(Math.random()*200)+100;
+    spOffset = (int)(sp/4);
+    rotOffset = (int)(sp/(Math.random()*20)+10);
+    strOffset = (int)(sp/(Math.random()*20)+10);
   }
   public void reset() {
     //currentHealth = maxHealth;
@@ -780,8 +860,21 @@ class RobotSpaceShip extends Floater
         setDirectionY(-getDirectionY());
       }
     }
+    noStroke();
+    fill(0, 50);
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI]*2 * Math.cos(dRadians)) - (yCorners[nI]*2 * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI]*2 * Math.sin(dRadians)) + (yCorners[nI]*2 * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
   }   
-    public void nextLevel() {
+  public void nextLevel() {
     noStroke();
     fill(0);
     rect(0, 0, width, height);
@@ -794,12 +887,12 @@ class RobotSpaceShip extends Floater
     noStroke();
     if (needHealth) {
       //myColor = color(250, 150, 150);
-      space = 50;
-      spaceOffset = (int)space/4;
-      rotateOffset = (int)(space/(40+(currentLevel)));
-      strafeOffset = (int)(space/(40+(currentLevel)));
-      radDir1=Math.asin((ship.getX()-getX())/(dist((float)getX(), (float)getY(), ship.getX(), ship.getY())))-Math.PI/2;
-      radDir=Math.asin((spacestation.getX()-getX())/(dist((float)getX(), (float)getY(), spacestation.getX(), spacestation.getY())))-Math.PI/2;
+      int space = (int)(sp/4);
+      int spaceOffset = spOffset;
+      int rotateOffset = rotOffset*2;
+      int strafeOffset = strOffset*2;
+      radDir1=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+      radDir=Math.asin((spacestation.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, spacestation.getX(), spacestation.getY())))-Math.PI/2;
       if (getY()-spacestation.getY()<0) {
         radDir*=-1;
       }
@@ -843,25 +936,12 @@ class RobotSpaceShip extends Floater
         }
       }
       if ((int)robotShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
-        robotbullet.add(new RobotBullet((int)myCenterX,(int)myCenterY,(int)myPointDirection, myDirectionX, myDirectionY));
+        robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
         robotShootCool = robotShootCoolTime;
       }//shoot
       //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
       //  currentFuel-=0.01;
       //}
-      noStroke();
-      fill(0, 50);
-      double dRadians = myPointDirection*(Math.PI/180);                 
-      int xRotatedTranslated, yRotatedTranslated;    
-      beginShape();         
-      for (int nI = 0; nI < corners; nI++)    
-      {     
-        //rotate and translate the coordinates of the floater using current direction 
-        xRotatedTranslated = (int)((xCorners[nI]*2 * Math.cos(dRadians)) - (yCorners[nI]*2 * Math.sin(dRadians))+myCenterX);     
-        yRotatedTranslated = (int)((xCorners[nI]*2 * Math.sin(dRadians)) + (yCorners[nI]*2 * Math.cos(dRadians))+myCenterY);      
-        vertex(xRotatedTranslated, yRotatedTranslated);
-      }   
-      endShape(CLOSE);
       int rectSizeX = 50;
       float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
       if (currentHealth < maxHealth) {
@@ -885,10 +965,10 @@ class RobotSpaceShip extends Floater
   public void control() {
     if (!needHealth) {
       //myColor = color(150, 250, 150);
-      space = 200;
-      spaceOffset = (int)space/4;
-      rotateOffset = (int)(space/(16+(currentLevel*4)));
-      strafeOffset = (int)(space/(16+(currentLevel*2)));
+      int space = sp;
+      int spaceOffset = spOffset;
+      int rotateOffset = rotOffset;
+      int strafeOffset = strOffset;
       radDir=Math.asin((ship.getX()-getX())/(dist((float)getX(), (float)getY(), ship.getX(), ship.getY())))-Math.PI/2;
       if (getY()-ship.getY()<0) {
         radDir*=-1;
@@ -905,7 +985,7 @@ class RobotSpaceShip extends Floater
         accelerate(maxTorque, 0);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
- 
+
         accelerate(-maxTorque, 0);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
@@ -925,22 +1005,9 @@ class RobotSpaceShip extends Floater
         rotate(-rotateSpeed);
       }
       if ((int)robotShootCool==0&&myPointDirection-(radDir*180/(Math.PI))<rotateOffset/1.5) {
-        robotbullet.add(new RobotBullet((int)myCenterX,(int)myCenterY,(int)myPointDirection, myDirectionX, myDirectionY));
+        robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
         robotShootCool = robotShootCoolTime;
       }//shoot
-      noStroke();
-      fill(0, 50);
-      double dRadians = myPointDirection*(Math.PI/180);                 
-      int xRotatedTranslated, yRotatedTranslated;    
-      beginShape();         
-      for (int nI = 0; nI < corners; nI++)    
-      {     
-        //rotate and translate the coordinates of the floater using current direction 
-        xRotatedTranslated = (int)((xCorners[nI]*2 * Math.cos(dRadians)) - (yCorners[nI]*2 * Math.sin(dRadians))+myCenterX);     
-        yRotatedTranslated = (int)((xCorners[nI]*2 * Math.sin(dRadians)) + (yCorners[nI]*2 * Math.cos(dRadians))+myCenterY);      
-        vertex(xRotatedTranslated, yRotatedTranslated);
-      }   
-      endShape(CLOSE);
       int rectSizeX = 50;
       float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
       if (currentHealth < maxHealth) {
@@ -1006,42 +1073,46 @@ class RobotSpaceShip extends Floater
 
 class SpaceStation extends Floater
 {
+  protected double speedRotation; 
   protected int stationSize = 5;
   SpaceStation(int x, int y) {
-    corners = 8;
+    corners = 4;
     xCorners = new int[corners];
     yCorners = new int[corners];
-    xCorners[0] = -25*stationSize;
+    xCorners[0] = -50*stationSize;
     yCorners[0] = -50*stationSize;
-    xCorners[1] = 25*stationSize;
+    xCorners[1] = 50*stationSize;
     yCorners[1] = -50*stationSize;
     xCorners[2] = 50*stationSize;
-    yCorners[2] = -25*stationSize;
-    xCorners[3] = 50*stationSize;
-    yCorners[3] = 25*stationSize;
-    xCorners[4] = 25*stationSize;
-    yCorners[4] = 50*stationSize;
-    xCorners[5] = -25*stationSize;
-    yCorners[5] = 50*stationSize;
-    xCorners[6] = -50*stationSize;
-    yCorners[6] = 25*stationSize;
-    xCorners[7] = -50*stationSize;
-    yCorners[7] = -25*stationSize;
+    yCorners[2] = 50*stationSize;
+    xCorners[3] = -50*stationSize;
+    yCorners[3] = 50*stationSize;
     myColor = color(150);
     myCenterX = x;
     myCenterY = y;
     myDirectionX = 0;
     myDirectionY = 0;
     myPointDirection = 270;
-    nDegreesOfRotation = 0;
+    speedRotation = 0.1;
   }
   public void show ()  //Draws the floater at the current position  
-  {             
-    fill(myColor);   
-    stroke(myColor);    
+  {                
     //convert degrees to radians for sin and cos         
     double dRadians = myPointDirection*(Math.PI/180);                 
-    int xRotatedTranslated, yRotatedTranslated;    
+    int xRotatedTranslated, yRotatedTranslated;   
+    noStroke();
+    fill(0, 50);   
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.cos(dRadians)) - (yCorners[nI]*1.1 * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.sin(dRadians)) + (yCorners[nI]*1.1 * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+    fill(myColor);   
+    stroke(myColor); 
     beginShape();         
     for (int nI = 0; nI < corners; nI++)    
     {     
@@ -1055,10 +1126,115 @@ class SpaceStation extends Floater
     fill(50);
     noStroke();
     translate((float)myCenterX, (float)myCenterY);
-    //rotate((int)nDegreesOfRotation);
-    rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
-    rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
+    //rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
+    //rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
+    fill(150+addHealth, 150+addHealth/2, 150+addHealth/2);
+    ellipse(0, 0, 100*stationSize, 100*stationSize);
     resetMatrix();
+    myPointDirection+=speedRotation;
+  }
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
+}
+
+class FuelCan extends Floater
+{
+  protected double speedRotation;
+  protected boolean isTouched = false;
+  FuelCan() {
+    corners = 4;
+    xCorners = new int[corners];
+    yCorners = new int[corners];
+    xCorners[0] = -20;
+    yCorners[0] = -20;
+    xCorners[1] = 20;
+    yCorners[1] = -20;
+    xCorners[2] = 20;
+    yCorners[2] = 20;
+    xCorners[3] = -20;
+    yCorners[3] = 20;
+    myColor = color(150, 250, 150);
+    myCenterX = (Math.random()*screenSize*2)-screenSize/2;
+    myCenterY = (Math.random()*screenSize*2)-screenSize/2;
+    myDirectionX = (Math.random()*1)-0.5;
+    myDirectionY = (Math.random()*1)-0.5;
+    myPointDirection = (int)Math.random()*360;
+    speedRotation = (Math.random()*1)-.5;
+  }
+  public void reset() {
+    isTouched = false;
+    myCenterX = (Math.random()*screenSize*2)-screenSize/2;
+    myCenterY = (Math.random()*screenSize*2)-screenSize/2;
+    myDirectionX = (Math.random()*1)-0.5;
+    myDirectionY = (Math.random()*1)-0.5;
+    myPointDirection = (int)Math.random()*360;
+    speedRotation = (Math.random()*1)-.5;
+  }
+  public void move() {
+    //change the x and y coordinates by myDirectionX and myDirectionY       
+    myCenterX += myDirectionX;    
+    myCenterY += myDirectionY;     
+    myPointDirection +=speedRotation;
+    //wrap around screen    
+    if (myCenterX >width+screenSize)
+    {   
+      reset();
+      myCenterX = -screenSize;
+    } else if (myCenterX<-screenSize)
+    {   
+      reset();
+      myCenterX = width+screenSize;
+    }    
+    if (myCenterY >height+screenSize)
+    {    
+      reset();
+      myCenterY = -screenSize;
+    } else if (myCenterY < -screenSize)
+    {   
+      reset();
+      myCenterY = height+screenSize;
+    }
+    noStroke();
+    fill(0, 50);
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.cos(dRadians)) - (yCorners[nI]*1.1 * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.sin(dRadians)) + (yCorners[nI]*1.1 * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
   }
   public void setX(int x) {
     myCenterX = x;
@@ -1094,16 +1270,12 @@ class SpaceStation extends Floater
 
 class Asteroid extends Floater
 {
-  protected double speedRotation;
-  protected int asteroidSize = (int)(Math.random()*5)+2;
+  protected double speedRotation; 
+  protected int asteroidSize = (int)(Math.random()*100)+50;
   Asteroid() {
     corners = 8;
     xCorners = new int[corners];
     yCorners = new int[corners];
-    //for (int i = 0; i < corners; i++) {
-    //  xCorners[i] = (-abs((int)((corners/2)-(i))))*((int)(Math.random()*4)+10);
-    //  yCorners[i] = (-abs((int)((corners*0.75)-(i))))*((int)(Math.random()*4)+10);
-    //}
     xCorners[0] = -5-asteroidSize;
     yCorners[0] = -10-asteroidSize*2;
     xCorners[1] = 5+asteroidSize;
@@ -1120,9 +1292,9 @@ class Asteroid extends Floater
     yCorners[6] = 5+asteroidSize;
     xCorners[7] = -10-asteroidSize*2;
     yCorners[7] = -5-asteroidSize;
-    myColor = 150;
-    myCenterX = (Math.random()*screenSize*2)-screenSize;
-    myCenterY = (Math.random()*screenSize*2)-screenSize;
+    myColor = color((int)(Math.random()*10)+145, (int)(Math.random()*10)+145, (int)(Math.random()*10)+145);
+    myCenterX = (Math.random()*screenSize*2)-screenSize/2;
+    myCenterY = (Math.random()*screenSize*2)-screenSize/2;
     myDirectionX = (Math.random()*1)-0.5;
     myDirectionY = (Math.random()*1)-0.5;
     myPointDirection = (int)Math.random()*360;
@@ -1130,8 +1302,9 @@ class Asteroid extends Floater
   }
   public void reset() {
     int asteroidSize = (int)(Math.random()*5)+2;
-    myCenterX = (Math.random()*screenSize*2)-screenSize;
-    myCenterY = (Math.random()*screenSize*2)-screenSize;
+    myColor = color((int)(Math.random()*10)+145, (int)(Math.random()*10)+145, (int)(Math.random()*10)+145);
+    myCenterX = (Math.random()*screenSize*2)-screenSize/2;
+    myCenterY = (Math.random()*screenSize*2)-screenSize/2;
     myDirectionX = (Math.random()*1)-0.5;
     myDirectionY = (Math.random()*1)-0.5;
     myPointDirection = (int)Math.random()*360;
@@ -1161,6 +1334,19 @@ class Asteroid extends Floater
       reset();
       myCenterY = height+screenSize;
     }
+    noStroke();
+    fill(0, 50);
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.cos(dRadians)) - (yCorners[nI]*1.1 * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI]*1.1 * Math.sin(dRadians)) + (yCorners[nI]*1.1 * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
   }
   public void setX(int x) {
     myCenterX = x;
@@ -1351,11 +1537,32 @@ class Fuel extends Gui
   public Fuel() {
     rectY = 360;
     barSize = (currentFuel/100)*rectSizeX;
-    barColor = color(150);
+    barColor = color(150, 150+addFuel, 150);
     titleName = "Fuel";
     titleY = 350;
   }
+  public void show() {
+    barColor = color(150, 150+addFuel, 150);
+    textSize(12);
+    titleX = (width-height)/2;
+    rectSizeX = width-height-19;
+    //title
+    fill(255);
+    textAlign(CENTER);
+    text(titleName, screenSize+titleX, titleY);
+    //rectangle
+    fill(0);
+    stroke(255);
+    rect((float)(screenSize+9), rectY, rectSizeX+1, 10);
+    //bar
+    fill(barColor);
+    noStroke();
+    rect((float)(screenSize+10), rectY+1, barSize, 9);
+  }
   public void interaction() {
+    if (addFuel>0) {
+      addFuel-=0.1;
+    }
     textAlign(CENTER, CENTER);
     textSize(30);
     fill(255, ((maxFuel-currentFuel)-(maxFuel/2))*10);
@@ -1441,13 +1648,15 @@ class areaMap extends Gui
     aY = ((areaY)*7.24);
     apX = ((areaX+posX)*7.24);
     apY = ((areaY+posY)*7.24);
-    // fill(robot.myColor);
-    // noStroke();
-    // ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+rpX+1.5, (float)rectY+(rectSizeX/areaSize/2)+rpY+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
-    // rX = (((int)robotAreaX+0.5)*7.24);
-    // rY = (((int)robotAreaY+0.5)*7.24);
-    // rpX = (robotAreaX*7.24);
-    // rpY = (robotAreaY*7.24);
+    for (int i = 0; i < robot.size(); i++) {
+      fill(robot.get(i).myColor);
+      noStroke();
+      ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(rAX.get(i)*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(rAY.get(i)*7.24)+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
+    }
+    // rX = (((int)rAX.get(i)+0.5)*7.24);
+    // rY = (((int)rAY.get(i)+0.5)*7.24);
+    // rpX = (rAX.get(i)*7.24);
+    // rpY = (rAY.get(i)*7.24);
   }
 }
 
@@ -1531,9 +1740,9 @@ class helpButton extends Gui
       text("DOWN", height-220, 220);
       text("RIGHT", height-180, 220);
       text("LEFT", height-260, 220);
-      textSize(12);
+      textSize(13);
       textAlign(CENTER, TOP);
-      text("Shoot the enemy spaceship and avoid death.\nAttempting to leave the boundaries of the map will result in ship damage.\nThe middle of the spaceship will repair and refuel you.", height/2, 460);
+      text("Attempting to leave the boundaries of the map will result in SHIP DAMAGE.\n \nThe spacestation located at the middle of the map will REPAIR you.\n \nYou MUST scout the map for GREEN fuel cannisters.", height/2, 460);
     }
   }
 }
@@ -1593,6 +1802,82 @@ class Menu
       textSize(30);
       text("PLAY", width/2, height-180);
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+        menuFlash=10;
+        men = 4;
+      }
+    } else if (men == 4) {
+      menuFlash+=0.1;
+      noStroke();
+      fill(0, 0);
+      rect(0, 0, width, height);
+      stroke(255);
+      rect((width/2)-100, height-200, 200, 50);
+      fill(255);
+      //keys
+      stroke(0);
+      fill(150, 200);
+      //wasd
+      rect(160, 160, 40, 40);
+      rect(200, 160, 40, 40);
+      rect(240, 160, 40, 40);
+      rect(160, 200, 40, 40);
+      rect(200, 200, 40, 40);
+      rect(240, 200, 40, 40);
+      //arrow keys
+      rect(width-200, 160, 40, 40);
+      rect(width-240, 160, 40, 40);
+      rect(width-280, 160, 40, 40);
+      rect(width-200, 200, 40, 40);
+      rect(width-240, 200, 40, 40);
+      rect(width-280, 200, 40, 40);
+      //shoot
+      rect(160, 300, 120, 40);
+      //pause
+      rect((width/2)-20, 300, 40, 40);
+      //hyperjump
+      rect(width-240, 300, 40, 40);
+      //skip screen
+      rect((width/2)-20, 400, 40, 40);
+      //continue
+      //text
+      textSize(50);
+      textAlign(CENTER, CENTER);
+      text("INSTRUCTIONS", width/2, 75);
+      textSize(20);
+      fill(255);
+      textAlign(CENTER, CENTER);
+      text("MOVE", width/2, 140);
+      text("SHOOT", 220, 280);
+      text("PAUSE", (width/2), 280);
+      text("HYPERJUMP", width-220, 280);
+      text("SKIP MENU", (width/2), 380);
+      textSize(20);
+      text("Q", 180, 180);
+      text("W", 220, 180);
+      text("E", 260, 180);
+      text("A", 180, 220);
+      text("S", 220, 220);
+      text("D", 260, 220);
+      text("SPACE", 220, 320);
+      text("P", width/2, 320);
+      text("J", width-220, 320);
+      text("C", width/2, 420);
+      text("OR", width/2, 220);
+      text("E", width-180, 180);
+      text("Q", width-260, 180);
+      textSize(14);
+      text("UP", width-220, 180);
+      textSize(10);
+      text("DOWN", width-220, 220);
+      text("RIGHT", width-180, 220);
+      text("LEFT", width-260, 220);
+      textSize(16);
+      textAlign(CENTER, TOP);
+      text("Attempting to leave the boundaries of the map will result in SHIP DAMAGE.\n \nThe spacestation located at the middle of the map will REPAIR you.\n \nYou MUST scout the map for GREEN fuel cannisters.", width/2, 575);
+      textAlign(CENTER, CENTER);
+      textSize(30);
+      text("CONTINUE", width/2, height-180);
+      if (menuFlash<=0&&(cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
         menuFlash=100;
         gameStop = false;
       }
@@ -1630,6 +1915,12 @@ class Menu
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=100;
         gameStop = false;
+        intRobotsAlive=1;
+        for (int i = 0; i < intRobotsAlive; i++) {
+          robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
+          rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+        }
         bulletCoolDownMax = 10;
         bulletCoolDown = 10;
         fuel.maxFuel = 100;
@@ -1707,17 +1998,23 @@ class Menu
         int randX = (int)Math.random()*areaSize;
         int randY = (int)Math.random()*areaSize;
         gameStop = false;
+        intRobotsAlive+=1;
+        for (int i = 0; i < intRobotsAlive; i++) {
+          robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
+          rAX.append((float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.append((float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+        }
         bulletCoolDown = bulletCoolDownMax;
         robotShootDamage = 1+(currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
         for (int i = 0; i<robot.size(); i++) {
-        robot.get(i).maxHealth = 100+(currentLevel*2.5);
-        robot.get(i).currentHealth = robot.get(i).maxHealth;
-        robot.get(i).setX(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
-        robot.get(i).setY(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
-        robot.get(i).setAreaX((float)((areaX)+((robot.get(i).getX()-(screenSize/2))/screenSize)));
-        robot.get(i).setAreaY((float)((areaY)+((robot.get(i).getY()-(screenSize/2))/screenSize)));
+          robot.get(i).maxHealth = 100+(currentLevel*2.5);
+          robot.get(i).currentHealth = robot.get(i).maxHealth;
+          robot.get(i).setX(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
+          robot.get(i).setY(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
+          robot.get(i).setAreaX((float)((areaX)+((robot.get(i).getX()-(screenSize/2))/screenSize)));
+          robot.get(i).setAreaY((float)((areaY)+((robot.get(i).getY()-(screenSize/2))/screenSize)));
         }
       }
     }
