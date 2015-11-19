@@ -1803,7 +1803,7 @@ class Menu
       text("PLAY", width/2, height-180);
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=10;
-        men = 4;
+        gameStop = false;
       }
     } else if (men == 4) {
       menuFlash+=0.1;
