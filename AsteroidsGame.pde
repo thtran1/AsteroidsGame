@@ -10,13 +10,17 @@ SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 SpaceShipControl control = new SpaceShipControl();
 //RobotSpaceShip robot = new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
 ArrayList <RobotSpaceShip> robot = new ArrayList <RobotSpaceShip>();
+ArrayList <FriendlySpaceShip> friendly = new ArrayList <FriendlySpaceShip>();
 SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 //Asteroid[] asteroid = new Asteroid[50];
 ArrayList <Bullet> bullet = new ArrayList <Bullet>();
 ArrayList <RobotBullet> robotbullet = new ArrayList <RobotBullet>();
+ArrayList <FriendlyBullet> friendlybullet = new ArrayList <FriendlyBullet>();
 ArrayList <Asteroid> asteroid;
 ArrayList <Float> rAX;
 ArrayList <Float> rAY;
+ArrayList <Float> fAX;
+ArrayList <Float> fAY;
 FuelCan fuelcan = new FuelCan();
 HyperJump hyperjump = new HyperJump();
 Speed speed = new Speed();
@@ -27,20 +31,20 @@ areaMap map = new areaMap();
 helpButton help = new helpButton();
 Menu menu = new Menu();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
-double gravity = 1.015;
+double gravity = 1.025;
 double maxTorque = 0.2;
 int rotateSpeed = 1;
 int topSpeed = 10;
-int bulletSpeed = 12;
+int bulletSpeed = 25;
 float bulletCoolDown = 10;
 float bulletCoolDownMax = 10;
-float bulletS = 2;
+float bulletS = 3;
 float bulletSpray = 0;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
-double shootDamage = 10;
-double robotShootDamage = 1+(currentLevel/5);
-int robotsAlive, intRobotsAlive;
+double shootDamage = 5;
+double robotShootDamage = 5+(currentLevel/5);
+int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
 float addHealth = 0;
@@ -55,7 +59,7 @@ boolean pPressed = false;
 boolean cPressed = false;
 boolean spacePressed = false;
 boolean gameStop = true;
-
+boolean defend = true;
 public void setup() 
 {
   size(900, 700);
@@ -67,16 +71,31 @@ public void setup()
   asteroid = new ArrayList <Asteroid>();
   rAX = new ArrayList <Float>();
   rAY = new ArrayList <Float>();
+  fAX = new ArrayList <Float>();
+  fAY = new ArrayList <Float>();
   for (int i = 0; i < 10; i++) {
     asteroid.add(new Asteroid());
   }
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 150; i++) {
     robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
     rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
     rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+    robot.get(i).setAreaX((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+    robot.get(i).setAreaY((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+    robot.get(i).setX((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaX()-areaX))));
+    robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
+    robot.get(i).target = (int)(Math.random()*(friendly.size()+1));
+  }
+  for (int i = 0; i < 140; i++) {
+    friendly.add(new FriendlySpaceShip(height/2, height/2));
+    fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
+    fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
+    friendly.get(i).target = (int)(Math.random()*robot.size());
   }
   robotsAlive = robot.size();
   intRobotsAlive = robot.size();
+  friendlysAlive = friendly.size();
+  intFriendlysAlive = friendly.size();
 }
 
 public void draw() 
@@ -117,6 +136,17 @@ public void draw()
           }
         }
       }
+      for (int i = 0; i<friendly.size(); i++) {
+        if (dist(spacestation.getX(), spacestation.getY(), friendly.get(i).getX(), friendly.get(i).getY())<50*spacestation.stationSize)
+        {
+          if (friendly.get(i).currentHealth < friendly.get(i).maxHealth && friendly.get(i).currentHealth>0) {
+            friendly.get(i).currentHealth += 0.001*friendly.get(i).maxHealth;
+          }
+          if (addHealth<50) {
+            addHealth+=1;
+          }
+        }
+      }
       if (addHealth>0) {
         addHealth-=0.5;
       }
@@ -130,6 +160,11 @@ public void draw()
       for (int i = 0; i <robot.size(); i++) {
         if ((int)robot.get(i).robotShootCool>0) {
           robot.get(i).robotShootCool-=1;
+        }
+      }
+      for (int i = 0; i <friendly.size(); i++) {
+        if ((int)friendly.get(i).friendlyShootCool>0) {
+          friendly.get(i).friendlyShootCool-=1;
         }
       }
       //if (areaX != areaSize/2 || areaY != areaSize/2) {
@@ -149,7 +184,6 @@ public void draw()
             currentFuel=fuel.maxFuel;
             addFuel = 50;
           }
-          fuelcan.reset();
         }
       }
       if (fuelcan.isTouched == false) {
@@ -163,15 +197,22 @@ public void draw()
       for (int i = 0; i<bullet.size(); i++) {
         bullet.get(i).move();
         bullet.get(i).show();
-        if (abs(bullet.get(i).getX()-height/2)>=height/2||abs(bullet.get(i).getY()-height/2)>=height/2) {
+        if (abs(bullet.get(i).getX()-height/2)>=height*3||abs(bullet.get(i).getY()-height/2)>=height*3) {
           bullet.remove(i);
         }
       }
       for (int i = 0; i<robotbullet.size(); i++) {
         robotbullet.get(i).move();
         robotbullet.get(i).show();
-        if (abs(robotbullet.get(i).getX()-height/2)>=height/2||abs(robotbullet.get(i).getY()-height/2)>=height/2) {
+        if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
           robotbullet.remove(i);
+        }
+      }
+      for (int i = 0; i<friendlybullet.size(); i++) {
+        friendlybullet.get(i).move();
+        friendlybullet.get(i).show();
+        if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
+          friendlybullet.remove(i);
         }
       }
       for (int i = 0; i < robot.size(); i++) {
@@ -182,11 +223,26 @@ public void draw()
             break;
           }
         }
+        for (int x = 0; x <friendlybullet.size(); x++) {
+          if (dist(friendlybullet.get(x).getX(), friendlybullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+friendlybullet.get(x).bulletSize) {
+            robot.get(i).currentHealth-=shootDamage;
+            friendlybullet.remove(x);
+            break;
+          }
+        }
       }
       for (int x = 0; x < robotbullet.size(); x++) {
         if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
           health.currentHealth-=robotShootDamage;
           robotbullet.remove(x);
+          break;
+        }
+        for (int y = 0; y < friendly.size(); y++) {
+          if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), friendly.get(y).getX(), friendly.get(y).getY()) < 15+robotbullet.get(x).bulletSize) {
+            friendly.get(y).currentHealth-=robotShootDamage;
+            robotbullet.remove(x);
+            break;
+          }
         }
       }
       control.control(); //spaceship controls
@@ -214,11 +270,40 @@ public void draw()
           }
         }
       }
+      for (int i = 0; i < friendly.size(); i++) {
+        if (friendly.get(i).dead == false) {
+          if (friendly.get(i).currentHealth<=0) {
+            friendly.get(i).dead = true;
+            friendly.get(i).myColor = 200;
+          }
+          friendly.get(i).reFuel();
+          friendly.get(i).control();
+          friendly.get(i).move();
+          friendly.get(i).show();
+          fAX.set(i, friendly.get(i).getAreaX());
+          fAY.set(i, friendly.get(i).getAreaY());
+        }
+        if (friendly.get(i).dead == true) {
+          friendly.get(i).move();
+          friendly.get(i).show();
+          friendly.get(i).myColor-=1;
+          if (friendly.get(i).myColor<50) {
+            friendly.remove(i);
+            fAX.remove(i);
+            fAY.remove(i);
+          }
+        }
+      }
       if (robot.size() == 0) {
+        for (int i = 0; i<friendly.size(); i++) {
+          friendly.remove(i);
+          fAX.remove(i);
+          fAY.remove(i);
+        }
         noStroke();
         fill(0);
         rect(0, 0, width, height);
-        points+=1;
+        points+=10;
         currentLevel+=1;
         gameStop = true;
         menu.men = 3;
@@ -250,6 +335,11 @@ public void draw()
         robot.remove(i);
         rAX.remove(i);
         rAY.remove(i);
+      }
+      for (int i = 0; i<friendly.size(); i++) {
+        friendly.remove(i);
+        fAX.remove(i);
+        fAY.remove(i);
       }
       noStroke();
       fill(0);
@@ -396,9 +486,15 @@ class Bullet extends Floater
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
     bulletSize+=bulletSpray;
     noStroke();
-    fill(150, 0, 0, 50);
+    fill(0, 0, 250, 50);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize*5, bulletSize*5);
   }
+  public void move ()   //move the floater in the current direction of travel
+  {      
+    //change the x and y coordinates by myDirectionX and myDirectionY       
+    myCenterX += myDirectionX;    
+    myCenterY += myDirectionY;
+  }   
   public void setX(int x) {
     myCenterX = x;
   }  
@@ -515,6 +611,10 @@ class SpaceShip extends Floater
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()-(screenSize));
       }
+      for (int i = 0; i<friendly.size(); i++) {
+        friendly.get(i).reset();
+        friendly.get(i).setX(friendly.get(i).getX()-(screenSize));
+      }
       spacestation.setX(spacestation.getX()-(screenSize));
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
@@ -523,10 +623,13 @@ class SpaceShip extends Floater
         asteroid.get(i).reset();
       }
       for (int i = 0; i < bullet.size(); i++) {
-        bullet.remove(i);
+        bullet.get(i).setX(bullet.get(i).getX()-(screenSize));
       }
       for (int i = 0; i < robotbullet.size(); i++) {
-        robotbullet.remove(i);
+        robotbullet.get(i).setX(robotbullet.get(i).getX()-(screenSize));
+      }
+      for (int i = 0; i < friendlybullet.size(); i++) {
+        friendlybullet.get(i).setX(friendlybullet.get(i).getX()-(screenSize));
       }
     } else if (myCenterX<0 && areaX>0)
     {     
@@ -538,6 +641,10 @@ class SpaceShip extends Floater
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()+(screenSize));
       }
+      for (int i = 0; i<friendly.size(); i++) {
+        friendly.get(i).reset();
+        friendly.get(i).setX(friendly.get(i).getX()+(screenSize));
+      }
       spacestation.setX(spacestation.getX()+(screenSize));
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
@@ -546,10 +653,13 @@ class SpaceShip extends Floater
         asteroid.get(i).reset();
       }
       for (int i = 0; i < bullet.size(); i++) {
-        bullet.remove(i);
+        bullet.get(i).setX(bullet.get(i).getX()+(screenSize));
       }
       for (int i = 0; i < robotbullet.size(); i++) {
-        robotbullet.remove(i);
+        robotbullet.get(i).setX(robotbullet.get(i).getX()+(screenSize));
+      }
+      for (int i = 0; i < friendlybullet.size(); i++) {
+        friendlybullet.get(i).setX(friendlybullet.get(i).getX()+(screenSize));
       }
     }    
     if (myCenterY >screenSize && areaY<areaSize)
@@ -562,6 +672,10 @@ class SpaceShip extends Floater
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()-(screenSize));
       }
+      for (int i = 0; i<friendly.size(); i++) {
+        friendly.get(i).reset();
+        friendly.get(i).setY(friendly.get(i).getY()-(screenSize));
+      }
       spacestation.setY(spacestation.getY()-(screenSize));
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
@@ -570,10 +684,13 @@ class SpaceShip extends Floater
         asteroid.get(i).reset();
       }
       for (int i = 0; i < bullet.size(); i++) {
-        bullet.remove(i);
+        bullet.get(i).setY(bullet.get(i).getY()-(screenSize));
       }
       for (int i = 0; i < robotbullet.size(); i++) {
-        robotbullet.remove(i);
+        robotbullet.get(i).setY(robotbullet.get(i).getY()-(screenSize));
+      }
+      for (int i = 0; i < friendlybullet.size(); i++) {
+        friendlybullet.get(i).setY(friendlybullet.get(i).getY()-(screenSize));
       }
     } else if (myCenterY < 0 && areaY>0)
     {     
@@ -585,6 +702,10 @@ class SpaceShip extends Floater
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()+(screenSize));
       }
+      for (int i = 0; i<friendly.size(); i++) {
+        friendly.get(i).reset();
+        friendly.get(i).setY(friendly.get(i).getY()+(screenSize));
+      }
       spacestation.setY(spacestation.getY()+(screenSize));
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
@@ -593,10 +714,13 @@ class SpaceShip extends Floater
         asteroid.get(i).reset();
       }
       for (int i = 0; i < bullet.size(); i++) {
-        bullet.remove(i);
+        bullet.get(i).setY(bullet.get(i).getY()+(screenSize));
       }
       for (int i = 0; i < robotbullet.size(); i++) {
-        robotbullet.remove(i);
+        robotbullet.get(i).setY(robotbullet.get(i).getY()+(screenSize));
+      }
+      for (int i = 0; i < friendlybullet.size(); i++) {
+        friendlybullet.get(i).setY(friendlybullet.get(i).getY()+(screenSize));
       }
     }
     if (areaX == areaSize) {
@@ -679,6 +803,12 @@ class RobotBullet extends Floater
     fill(150, 0, 0, 50);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize*5, bulletSize*5);
   }
+  public void move ()   //move the floater in the current direction of travel
+  {      
+    //change the x and y coordinates by myDirectionX and myDirectionY       
+    myCenterX += myDirectionX;    
+    myCenterY += myDirectionY;
+  }   
   public void setX(int x) {
     myCenterX = x;
   }  
@@ -713,8 +843,8 @@ class RobotBullet extends Floater
 
 class RobotSpaceShip extends Floater  
 {   
-  protected float currentHealth = 100+(currentLevel*2.5);
-  protected float maxHealth = 100+(currentLevel*2.5);
+  protected float currentHealth = 50+(currentLevel*2.5);
+  protected float maxHealth = 50+(currentLevel*2.5);
   protected double intX = screenSize;
   protected double intY = screenSize;
   protected int spaceShipSize = 1;
@@ -724,13 +854,13 @@ class RobotSpaceShip extends Floater
   protected int spOffset;
   protected int rotOffset;
   protected int strOffset;
-  protected float fuel;
   protected boolean needHealth;
   protected float robotAreaX = 11;
   protected float robotAreaY = 11;
   protected boolean dead = false;
   protected int robotShootCool = 0;
-  protected int robotShootCoolTime = 5;
+  protected int robotShootCoolTime = 25;
+  protected int target;
   RobotSpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -774,11 +904,13 @@ class RobotSpaceShip extends Floater
     myDirectionY = 0;
     myPointDirection = 270;
     nDegreesOfRotation = 0;
-    fuel = 10;
     sp = (int)(Math.random()*200)+100;
     spOffset = (int)(sp/4);
-    rotOffset = (int)(sp/(Math.random()*20)+10);
-    strOffset = (int)(sp/(Math.random()*20)+10);
+    //rotOffset = (int)(sp/(Math.random()*10)+1);
+    //strOffset = (int)(sp/(Math.random()*10)+1);
+    rotOffset = (int)(((Math.random()*300)+300)/sp);
+    strOffset = (int)(((Math.random()*300)+300)/sp);
+    //strOffset = 0;
   }
   public void reset() {
     //currentHealth = maxHealth;
@@ -858,6 +990,10 @@ class RobotSpaceShip extends Floater
   }
   public void reFuel() {
     noStroke();
+    if (target>=friendly.size()+1) {
+      target = (int)(Math.random()*friendly.size()+1);
+    }
+    int z = target;
     if (needHealth) {
       //myColor = color(250, 150, 150);
       int space = (int)(sp/4);
@@ -869,43 +1005,44 @@ class RobotSpaceShip extends Floater
       if (getY()-spacestation.getY()<0) {
         radDir*=-1;
       }
-      if (dist(spacestation.getX(), spacestation.getY(), getX(), getY())<space+spaceOffset) {
-        fuel+=0.02;
-      }
       fill(255);
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //w
-        accelerate(maxTorque/2, 0);
+        accelerate(maxTorque/3, 0);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))>90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
 
-        accelerate(-maxTorque/2, 0);
+        accelerate(-maxTorque/3, 0);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
 
-        accelerate(maxTorque/3, -90);
+        accelerate(maxTorque/5, -90);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
 
-        accelerate(maxTorque/3, 90);
+        accelerate(maxTorque/5, 90);
       }
-      if (dist(ship.getX(), ship.getY(), getX(), getY())<height/1.5) {
-        if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
+      if (target<friendly.size()) {
+        if (dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())>height/1.5) {
+          if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
 
-          rotate(rotateSpeed);
-        }
-        if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
 
-          rotate(-rotateSpeed);
+            rotate(-rotateSpeed);
+          }
         }
       }
-      if (dist(ship.getX(), ship.getY(), getX(), getY())>height/1.5) {
-        if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+      if (target>=friendly.size()) {
+        if (dist(ship.getX(), ship.getY(), getX(), getY())>height/1.5) {
+          if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
 
-          rotate(rotateSpeed);
-        }
-        if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
 
-          rotate(-rotateSpeed);
+            rotate(-rotateSpeed);
+          }
         }
       }
       if ((int)robotShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
@@ -937,66 +1074,123 @@ class RobotSpaceShip extends Floater
 
   public void control() {
     if (!needHealth) {
-      //myColor = color(150, 250, 150);
-      int space = sp;
-      int spaceOffset = spOffset;
-      int rotateOffset = rotOffset;
-      int strafeOffset = strOffset;
-      radDir=Math.asin((ship.getX()-getX())/(dist((float)getX(), (float)getY(), ship.getX(), ship.getY())))-Math.PI/2;
-      if (getY()-ship.getY()<0) {
-        radDir*=-1;
+      if (target>=friendly.size()+1) {
+        target = (int)(Math.random()*friendly.size()+1);
       }
-      //myPointDirection=radDir*180/(Math.PI);
-      fill(255);
-      if (dist(spacestation.getX(), spacestation.getY(), getX(), getY())>screenSize/2) {
-        int x = (int)(Math.random()*1000);
-        if (x%250==0) {
-          fuel = 0;
+      int z = target;
+      if (friendly.size()>0&&target<friendly.size()) {
+        int space = sp;
+        int spaceOffset = spOffset;
+        int rotateOffset = rotOffset;
+        int strafeOffset = strOffset;
+        radDir=Math.asin((friendly.get(z).getX()-getX())/(dist((float)getX(), (float)getY(), friendly.get(z).getX(), friendly.get(z).getY())))-Math.PI/2;
+        if (getY()-friendly.get(z).getY()<0) {
+          radDir*=-1;
+        }
+        //myPointDirection=radDir*180/(Math.PI);
+        fill(255);
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())>space+spaceOffset) { //w
+          accelerate(maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
+
+          accelerate(-maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+
+          accelerate(maxTorque/1.5, -90);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+
+          accelerate(maxTorque/1.5, 90);
+        }
+        if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+
+        if ((int)robotShootCool==0&&myPointDirection-(radDir*180/(Math.PI))<rotateOffset/1.5) {
+          robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+          robotShootCool = robotShootCoolTime;
+        }//shoot
+        int rectSizeX = 50;
+        float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+        if (currentHealth < maxHealth) {
+          //rectangle
+          fill(0);
+          stroke(150);
+          strokeWeight(1);
+          rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+          strokeWeight(0.5);
+          //bar
+          fill(255, 0, 0);
+          noStroke();
+          rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+        }
+        if (currentHealth<maxHealth/3) {
+          needHealth = true;
         }
       }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //w
-        accelerate(maxTorque, 0);
-      }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
+      if (friendly.size()==0&&target>=friendly.size()+1) {
+        //myColor = color(150, 250, 150);
+        int space = sp;
+        int spaceOffset = spOffset;
+        int rotateOffset = rotOffset;
+        int strafeOffset = strOffset;
+        radDir=Math.asin((ship.getX()-getX())/(dist((float)getX(), (float)getY(), ship.getX(), ship.getY())))-Math.PI/2;
+        if (getY()-ship.getY()<0) {
+          radDir*=-1;
+        }
+        //myPointDirection=radDir*180/(Math.PI);
+        fill(255);
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //w
+          accelerate(maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
 
-        accelerate(-maxTorque, 0);
-      }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+          accelerate(-maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
 
-        accelerate(maxTorque/1.5, -90);
-      }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+          accelerate(maxTorque/1.5, -90);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
 
-        accelerate(maxTorque/1.5, 90);
-      }
-      if (myPointDirection-(radDir*180/(Math.PI))<-rotateOffset) { //d
+          accelerate(maxTorque/1.5, 90);
+        }
+        if (myPointDirection-(radDir*180/(Math.PI))<-rotateOffset) { //d
 
-        rotate(rotateSpeed);
-      }
-      if (myPointDirection-(radDir*180/(Math.PI))>rotateOffset) { //a
+          rotate(rotateSpeed);
+        }
+        if (myPointDirection-(radDir*180/(Math.PI))>rotateOffset) { //a
 
-        rotate(-rotateSpeed);
-      }
-      if ((int)robotShootCool==0&&myPointDirection-(radDir*180/(Math.PI))<rotateOffset/1.5) {
-        robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
-        robotShootCool = robotShootCoolTime;
-      }//shoot
-      int rectSizeX = 50;
-      float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
-      if (currentHealth < maxHealth) {
-        //rectangle
-        fill(0);
-        stroke(150);
-        strokeWeight(1);
-        rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
-        strokeWeight(0.5);
-        //bar
-        fill(255, 0, 0);
-        noStroke();
-        rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
-      }
-      if (currentHealth<maxHealth/3) {
-        needHealth = true;
+          rotate(-rotateSpeed);
+        }
+        if ((int)robotShootCool==0&&myPointDirection-(radDir*180/(Math.PI))<rotateOffset/1.5) {
+          robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+          robotShootCool = robotShootCoolTime;
+        }//shoot
+        int rectSizeX = 50;
+        float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+        if (currentHealth < maxHealth) {
+          //rectangle
+          fill(0);
+          stroke(150);
+          strokeWeight(1);
+          rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+          strokeWeight(0.5);
+          //bar
+          fill(255, 0, 0);
+          noStroke();
+          rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+        }
+        if (currentHealth<maxHealth/3) {
+          needHealth = true;
+        }
       }
     }
   }
@@ -1041,6 +1235,467 @@ class RobotSpaceShip extends Floater
   }
   public float getAreaY() {
     return robotAreaY;
+  }
+}
+
+class FriendlyBullet extends Floater
+{
+  protected double dRadians;
+  protected float bulletSize = bulletS;
+  public FriendlyBullet(int x, int y, int d, double dX, double dY) {
+    myCenterX = x;
+    myCenterY = y;
+    myPointDirection = d+((Math.random()*6)-3);
+    dRadians =myPointDirection*(Math.PI/180);
+    myDirectionX=bulletSpeed*Math.cos(dRadians) + dX - ship.getDirectionX();
+    myDirectionY=bulletSpeed*Math.sin(dRadians) + dY - ship.getDirectionY();
+    myColor = color(255, 255, 0);
+  }
+  public void show()
+  {
+    noStroke();
+    fill(myColor);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
+    bulletSize+=bulletSpray;
+    noStroke();
+    fill(0, 250, 0, 50);
+    ellipse((int)myCenterX, (int)myCenterY, bulletSize*5, bulletSize*5);
+  }
+  public void move ()   //move the floater in the current direction of travel
+  {      
+    //change the x and y coordinates by myDirectionX and myDirectionY       
+    myCenterX += myDirectionX;    
+    myCenterY += myDirectionY;
+  }   
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
+}
+
+class FriendlySpaceShip extends Floater  
+{   
+  protected float currentHealth = 50+(currentLevel*2.5);
+  protected float maxHealth = 50+(currentLevel*2.5);
+  protected double intX = screenSize;
+  protected double intY = screenSize;
+  protected int spaceShipSize = 1;
+  protected double radDir =-Math.PI/2;
+  protected double radDir1 =-Math.PI/2;
+  protected double radDir2 =-Math.PI/2;
+  protected int sp;
+  protected int spOffset;
+  protected int rotOffset;
+  protected int strOffset;
+  protected boolean needHealth;
+  protected float friendlyAreaX = 11;
+  protected float friendlyAreaY = 11;
+  protected boolean dead = false;
+  protected int friendlyShootCool = 0;
+  protected int friendlyShootCoolTime = 25;
+  protected int target;
+  FriendlySpaceShip(int x, int y) {
+    corners = 15;
+    xCorners = new int[corners];
+    yCorners = new int[corners];
+    xCorners[0] = -5*spaceShipSize;
+    yCorners[0] = -6*spaceShipSize;
+    xCorners[1] = -4*spaceShipSize;
+    yCorners[1] = -10*spaceShipSize;
+    xCorners[2] = -2*spaceShipSize;
+    yCorners[2] = -1*spaceShipSize;
+    xCorners[3] = 9*spaceShipSize;
+    yCorners[3] = -1*spaceShipSize;
+    xCorners[4] = 9*spaceShipSize;
+    yCorners[4] = -4*spaceShipSize;
+    xCorners[5] = 10*spaceShipSize;
+    yCorners[5] = -4*spaceShipSize;
+    xCorners[6] = 10*spaceShipSize;
+    yCorners[6] = -1*spaceShipSize;
+    //top
+    xCorners[7] = 21*spaceShipSize;
+    yCorners[7] = 0*spaceShipSize;
+    //top
+    xCorners[8] = 10*spaceShipSize;
+    yCorners[8] = 1*spaceShipSize;
+    xCorners[9] = 10*spaceShipSize;
+    yCorners[9] = 4*spaceShipSize;
+    xCorners[10] = 9*spaceShipSize;
+    yCorners[10] = 4*spaceShipSize;
+    xCorners[11] = 9*spaceShipSize;
+    yCorners[11] = 1*spaceShipSize;
+    xCorners[12] = -2*spaceShipSize;
+    yCorners[12] = 1*spaceShipSize;
+    xCorners[13] = -4*spaceShipSize;
+    yCorners[13] = 10*spaceShipSize;
+    xCorners[14] = -5*spaceShipSize;
+    yCorners[14] = 6*spaceShipSize;
+    myColor = color(150, 250, 150);
+    myCenterX = x;
+    myCenterY = y;
+    myDirectionX = 0;
+    myDirectionY = 0;
+    myPointDirection = 270;
+    nDegreesOfRotation = 0;
+    sp = (int)(Math.random()*200)+100;
+    spOffset = (int)(sp/4);
+    //rotOffset = (int)(sp/(Math.random()*10)+1);
+    //strOffset = (int)(sp/(Math.random()*10)+1);
+    rotOffset = (int)(((Math.random()*300)+300)/sp);
+    strOffset = (int)(((Math.random()*300)+300)/sp);
+    //strOffset = 0;
+  }
+  public void reset() {
+    //currentHealth = maxHealth;
+    //myCenterX = myCenterX+((areaX)*screenSize);
+    //myCenterY = myCenterY+((areaY)*screenSize);
+  }
+  public void accelerate (double dAmount, double pAdd)   
+  {          
+    //convert the current direction the floater is pointing to radians    
+    double dRadians = (myPointDirection+pAdd)*(Math.PI/180);     
+    //change coordinates of direction of travel    
+    myDirectionX += ((dAmount) * Math.cos(dRadians));    
+    myDirectionY += ((dAmount) * Math.sin(dRadians));
+  }   
+  public void rotate (int dAmount)   
+  {     
+    //rotates the floater by a given number of degrees  
+    nDegreesOfRotation+=dAmount;
+  }   
+  public void move ()   //move the floater in the current direction of travel
+  {      
+    //change the x and y coordinates by myDirectionX and myDirectionY 
+    myPointDirection+=nDegreesOfRotation; 
+    myPointDirection = myPointDirection/(gravity*1.2);
+    myCenterX += myDirectionX;    
+    myCenterY += myDirectionY;
+    myDirectionX = myDirectionX/gravity;
+    myDirectionY = myDirectionY/gravity; 
+    friendlyAreaX = (float)((areaX)+((myCenterX-(screenSize/2))/screenSize));
+    friendlyAreaY = (float)((areaY)+((myCenterY-(screenSize/2))/screenSize));
+    if ((int)friendlyAreaX == areaSize) {
+      if (getX()>height+(((int)friendlyAreaX-areaX)*height)) {
+        currentHealth-=abs((float)getDirectionX());
+        setDirectionX(-getDirectionX());
+      }
+    }
+    if ((int)friendlyAreaX == 0) {
+      if (getX()<0+(((int)friendlyAreaX-areaX)*height)) {
+        currentHealth-=abs((float)getDirectionX());
+        setDirectionX(-getDirectionX());
+      }
+    }
+    if ((int)friendlyAreaY == areaSize) {
+      if (getY()>height+(((int)friendlyAreaY-areaY)*height)) {
+        currentHealth-=abs((float)getDirectionY());
+        setDirectionY(-getDirectionY());
+      }
+    }
+    if ((int)friendlyAreaY == 0) {
+      if (getY()<0+(((int)friendlyAreaY-areaY)*height)) {
+        currentHealth-=abs((float)getDirectionY());
+        setDirectionY(-getDirectionY());
+      }
+    }
+    noStroke();
+    fill(0, 50);
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI]*2 * Math.cos(dRadians)) - (yCorners[nI]*2 * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI]*2 * Math.sin(dRadians)) + (yCorners[nI]*2 * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+  }   
+  public void reFuel() {
+    noStroke();
+    if (needHealth&&robot.size()>0) {
+      if (target>=robot.size()) {
+        target = (int)(Math.random()*robot.size());
+      }
+      int z = target;
+      //myColor = color(250, 150, 150);
+      int space = (int)(sp/4);
+      int spaceOffset = spOffset;
+      int rotateOffset = rotOffset*2;
+      int strafeOffset = strOffset*2;
+      radDir1=Math.asin((robot.get(z).getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, robot.get(z).getX(), robot.get(z).getY())))-Math.PI/2;
+      radDir=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+      radDir2=Math.asin((spacestation.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, spacestation.getX(), spacestation.getY())))-Math.PI/2;
+      if (getY()-robot.get(z).getY()<0) {
+        radDir*=-1;
+      }
+      fill(255);
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir2*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //w
+        accelerate(maxTorque/3, 0);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir2*180/(Math.PI))))>90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
+
+        accelerate(-maxTorque/3, 0);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir2*180/(Math.PI))>strafeOffset) { //q
+
+        accelerate(maxTorque/5, -90);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir2*180/(Math.PI))<-strafeOffset) { //e
+
+        accelerate(maxTorque/5, 90);
+      }
+      if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<height/1.5) {
+        if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+      } else if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())>height/1.5) {
+        if ((myPointDirection-(radDir2*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir2*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+      }
+      if ((int)friendlyShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
+        friendlybullet.add(new FriendlyBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+        friendlyShootCool = friendlyShootCoolTime;
+      }//shoot
+      //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+      //  currentFuel-=0.01;
+      //}
+      int rectSizeX = 50;
+      float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+      if (currentHealth < maxHealth) {
+        //rectangle
+        fill(0);
+        stroke(150);
+        strokeWeight(1);
+        rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+        strokeWeight(0.5);
+        //bar
+        fill(255, 0, 0);
+        noStroke();
+        rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+      }
+      if (currentHealth>maxHealth/1.5) {
+        needHealth = false;
+      }
+    }
+  }
+
+  public void control() {
+    if (!needHealth&&robot.size()>0) {
+      if (target>=robot.size()) {
+        target = (int)(Math.random()*robot.size());
+      }
+      int z = target;
+      if (defend) {
+        //myColor = color(150, 250, 150);
+        int space = sp;
+        int spaceOffset = spOffset;
+        int rotateOffset = rotOffset;
+        int strafeOffset = strOffset;
+        radDir1=Math.asin((robot.get(z).getX()-getX())/(dist((float)getX(), (float)getY(), robot.get(z).getX(), robot.get(z).getY())))-Math.PI/2;
+        radDir=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+        if (getY()-robot.get(z).getY()<0) {
+          radDir*=-1;
+        }
+        //myPointDirection=radDir*180/(Math.PI);
+        fill(255);
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //w
+          accelerate(maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))>90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //s
+
+          accelerate(-maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+
+          accelerate(maxTorque/1.5, -90);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+
+          accelerate(maxTorque/1.5, 90);
+        }
+        if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())>height/.5) {
+          if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+
+            rotate(-rotateSpeed);
+          }
+        } else if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<height/.5) {
+          if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
+
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
+
+            rotate(-rotateSpeed);
+          }
+        }
+        if ((int)friendlyShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
+          friendlybullet.add(new FriendlyBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+          friendlyShootCool = friendlyShootCoolTime;
+        }//shoot
+        //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+        //  currentFuel-=0.01;
+        //}
+        int rectSizeX = 50;
+        float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+        if (currentHealth < maxHealth) {
+          //rectangle
+          fill(0);
+          stroke(150);
+          strokeWeight(1);
+          rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+          strokeWeight(0.5);
+          //bar
+          fill(255, 0, 0);
+          noStroke();
+          rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+        }
+        if (currentHealth<maxHealth/3) {
+          needHealth = true;
+        }
+      } else if (!defend) {
+        //myColor = color(150, 250, 150);
+        int space = sp;
+        int spaceOffset = spOffset;
+        int rotateOffset = rotOffset;
+        int strafeOffset = strOffset;
+        radDir=Math.asin((robot.get(z).getX()-getX())/(dist((float)getX(), (float)getY(), robot.get(z).getX(), robot.get(z).getY())))-Math.PI/2;
+        if (getY()-robot.get(z).getY()<0) {
+          radDir*=-1;
+        }
+        //myPointDirection=radDir*180/(Math.PI);
+        fill(255);
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())>space+spaceOffset) { //w
+          accelerate(maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
+
+          accelerate(-maxTorque, 0);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+
+          accelerate(maxTorque/1.5, -90);
+        }
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+
+          accelerate(maxTorque/1.5, 90);
+        }
+        if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+
+        if ((int)friendlyShootCool==0&&myPointDirection-(radDir*180/(Math.PI))<rotateOffset/1.5) {
+          friendlybullet.add(new FriendlyBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+          friendlyShootCool = friendlyShootCoolTime;
+        }//shoot
+        int rectSizeX = 50;
+        float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+        if (currentHealth < maxHealth) {
+          //rectangle
+          fill(0);
+          stroke(150);
+          strokeWeight(1);
+          rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+          strokeWeight(0.5);
+          //bar
+          fill(255, 0, 0);
+          noStroke();
+          rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+        }
+        if (currentHealth<maxHealth/3) {
+          needHealth = true;
+        }
+      }
+    }
+  }
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
+  }
+  public void setAreaX(float x) {
+    friendlyAreaX = x;
+  }
+  public float getAreaX() {
+    return friendlyAreaX;
+  }
+  public void setAreaY(float y) {
+    friendlyAreaY = y;
+  }
+  public float getAreaY() {
+    return friendlyAreaY;
   }
 }
 
@@ -1579,6 +2234,16 @@ class BulletCool extends Gui
     fill(255);
     textAlign(CENTER, CENTER);
     text("Level: " + currentLevel, height+(width-height)/2, 430);
+    text("Enemies: " + robot.size(), height+(width-height)/2, 450);
+    text("Friendlies: " + friendly.size(), height+(width-height)/2, 470);
+    if (defend) {
+      fill(50, 250, 50);
+      text("Friendlies: Defend", height+(width-height)/2, 490);
+    }
+    if (!defend) {
+      fill(250, 50, 50);
+      text("Friendlies: Attack", height+(width-height)/2, 490);
+    }
   }
 }
 
@@ -1625,6 +2290,11 @@ class areaMap extends Gui
       fill(robot.get(i).myColor);
       noStroke();
       ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(rAX.get(i)*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(rAY.get(i)*7.24)+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
+    }
+    for (int i = 0; i < friendly.size(); i++) {
+      fill(friendly.get(i).myColor);
+      noStroke();
+      ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(fAX.get(i)*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(fAY.get(i)*7.24)+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
     }
     // rX = (((int)rAX.get(i)+0.5)*7.24);
     // rY = (((int)rAY.get(i)+0.5)*7.24);
@@ -1682,7 +2352,9 @@ class helpButton extends Gui
       rect((height/2)-20, 300, 40, 40);
       //hyperjump
       rect(height-240, 300, 40, 40);
-      //continue
+      //switch mode
+      rect(height-240, 400, 40, 40);
+      //skip screen
       rect((height/2)-20, 400, 40, 40);
       //text
       textSize(20);
@@ -1692,6 +2364,7 @@ class helpButton extends Gui
       text("SHOOT", 220, 280);
       text("PAUSE", (height/2), 280);
       text("HYPERJUMP", height-220, 280);
+      text("SWITCH MODE", height-220, 380);
       text("SKIP MENU", (height/2), 380);
       textSize(20);
       text("Q", 180, 180);
@@ -1703,6 +2376,7 @@ class helpButton extends Gui
       text("SPACE", 220, 320);
       text("P", height/2, 320);
       text("J", height-220, 320);
+      text("L", height-220, 420);
       text("C", height/2, 420);
       text("OR", height/2, 220);
       text("E", height-180, 180);
@@ -1810,6 +2484,8 @@ class Menu
       rect((width/2)-20, 300, 40, 40);
       //hyperjump
       rect(width-240, 300, 40, 40);
+      //switch mode
+      rect(width-240, 400, 40, 40);
       //skip screen
       rect((width/2)-20, 400, 40, 40);
       //continue
@@ -1824,6 +2500,7 @@ class Menu
       text("SHOOT", 220, 280);
       text("PAUSE", (width/2), 280);
       text("HYPERJUMP", width-220, 280);
+      text("SWITCH FRIENDLY MODE", width-220, 380);
       text("SKIP MENU", (width/2), 380);
       textSize(20);
       text("Q", 180, 180);
@@ -1835,6 +2512,7 @@ class Menu
       text("SPACE", 220, 320);
       text("P", width/2, 320);
       text("J", width-220, 320);
+      text("L", width-220, 420);
       text("C", width/2, 420);
       text("OR", width/2, 220);
       text("E", width-180, 180);
@@ -1891,11 +2569,17 @@ class Menu
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=100;
         gameStop = false;
-        intRobotsAlive=1;
+        intRobotsAlive=2;
+        intFriendlysAlive=1;
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-          rAX.add(i,(float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
-          rAY.add(i,(float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+          rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+        }
+        for (int i = 0; i < intFriendlysAlive; i++) {
+          friendly.add(new FriendlySpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
+          fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
+          fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
         }
         bulletCoolDownMax = 10;
         bulletCoolDown = 10;
@@ -1903,11 +2587,17 @@ class Menu
         health.maxHealth = 100;
         shootDamage = 5;
         currentLevel = 1;
-        robotShootDamage = 1;
+        robotShootDamage = 5+(currentLevel/5);
         health.currentHealth = health.maxHealth;
         currentFuel = fuel.maxFuel;
         for (int i = 0; i<robot.size(); i++) {
+          robot.get(i).maxHealth = 50;
           robot.get(i).currentHealth = robot.get(i).maxHealth;
+        }
+        for (int i = 0; i<friendly.size(); i++) {
+          friendly.get(i).maxHealth = 50;
+          friendly.get(i).currentHealth = friendly.get(i).maxHealth;
+          friendly.get(i).target = (int)(Math.random()*robot.size());
         }
         // robot.setX((int)((((areaSize/2)-abs((int)robotAreaX-areaX))*height)-(areaX*height)));
         // robot.setY((int)((((areaSize/2)-abs((int)robotAreaY-areaY))*height)-(areaY*height)));
@@ -1922,6 +2612,7 @@ class Menu
       rect((width/2)-400, height-300, 200, 50);
       rect((width/2)-100, height-300, 200, 50);
       rect((width/2)+200, height-300, 200, 50);
+      rect((width/2)-400, height-360, 200, 50);
       rect((width/2)+200, height-360, 200, 50);
       fill(255);
       textSize(50);
@@ -1932,42 +2623,51 @@ class Menu
       text("CONTINUE", width/2, height-180);
       textAlign(CENTER, CENTER);
       textSize(12);
-      text("FUEL+20\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
-      text("HEALTH+10\nHEALTH: "+(int)health.maxHealth, (width/2), height-280);
-      text("DAMAGE+0.5\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
-      text("CANNON CAPACITY+2\nCAPACITY: "+(int)bulletCoolDownMax, (width/2)+300, height-340);
+      text("FUEL+20 (3PT)\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
+      text("HEALTH+20 (7PT)\nHEALTH: "+(int)health.maxHealth, (width/2), height-280);
+      text("DAMAGE+1 (7PT)\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
+      text("FRIENDLY SHIP+1 (17PT)\nCAPACITY: "+(int)intFriendlysAlive, (width/2)-300, height-340);
+      text("CANNON CAPACITY+5 (5PT)\nCAPACITY: "+(int)bulletCoolDownMax, (width/2)+300, height-340);
       //fuel, health, bullet damage
       //fuel
-      if (mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-300&&mouseY<height-300+50&&points>2) {
         menuFlash=100;
         fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
         menuFlash-=10;
-        points-=1;
+        points-=3;
         fuel.maxFuel+=20;
         noStroke();
       }
-      if (mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-300&&mouseY<height-300+50&&points>6) {
         menuFlash=100;
         fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
         menuFlash-=10;
-        points-=1;
-        health.maxHealth+=10;
+        points-=7;
+        health.maxHealth+=20;
         noStroke();
       }
-      if (mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-300&&mouseY<height-300+50&&points>0) {
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-300&&mouseY<height-300+50&&points>6) {
         menuFlash=100;
         fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
         menuFlash-=10;
-        points-=1;
-        shootDamage+=0.5;
+        points-=7;
+        shootDamage+=1;
         noStroke();
       }
-      if (mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-360&&mouseY<height-360+50&&points>0) {
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-360&&mouseY<height-360+50&&points>16) {
         menuFlash=100;
         fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
         menuFlash-=10;
-        points-=1;
-        bulletCoolDownMax+=2;
+        points-=17;
+        intFriendlysAlive+=1;
+        noStroke();
+      }
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)+200&&mouseX<(width/2)+200+200&&mouseY>height-360&&mouseY<height-360+50&&points>4) {
+        menuFlash=100;
+        fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
+        menuFlash-=10;
+        points-=5;
+        bulletCoolDownMax+=5;
         noStroke();
       }
       if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
@@ -1978,20 +2678,32 @@ class Menu
         intRobotsAlive+=1;
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-          rAX.add(i,(float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
-          rAY.add(i,(float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+          rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
+          rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
+        }
+        for (int i = 0; i < intFriendlysAlive; i++) {
+          friendly.add(new FriendlySpaceShip(height/2, height/2));
+          fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
+          fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
         }
         bulletCoolDown = bulletCoolDownMax;
-        robotShootDamage = 1+(currentLevel/5);
+        robotShootDamage += (currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
         for (int i = 0; i<robot.size(); i++) {
-          robot.get(i).maxHealth = 100+(currentLevel*2.5);
+          robot.get(i).maxHealth += (currentLevel*2.5);
           robot.get(i).currentHealth = robot.get(i).maxHealth;
-          robot.get(i).setX(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
-          robot.get(i).setY(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
-          robot.get(i).setAreaX((float)((areaX)+((robot.get(i).getX()-(screenSize/2))/screenSize)));
-          robot.get(i).setAreaY((float)((areaY)+((robot.get(i).getY()-(screenSize/2))/screenSize)));
+          robot.get(i).setAreaX((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+          robot.get(i).setAreaY((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+          robot.get(i).setX((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaX()-areaX))));
+          robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
+          //myCenterY=(float)((screenSize/2)+(screenSize*(robotAreaY-areaY)));
+        }
+        for (int i = 0; i<friendly.size(); i++) {
+          friendly.get(i).maxHealth += (currentLevel*2.5);
+          friendly.get(i).currentHealth = friendly.get(i).maxHealth;
+          friendly.get(i).target = (int)(Math.random()*robot.size());
+          //myCenterY=(float)((screenSize/2)+(screenSize*(robotAreaY-areaY)));
         }
       }
     }
@@ -2030,6 +2742,13 @@ public void keyPressed()
   }
   if (keyCode == 'C') {
     cPressed = true;
+  }
+  if (keyCode == 'L') {
+    if (!defend) {
+      defend = true;
+    } else if (defend) {
+      defend = false;
+    }
   }
 }
 
