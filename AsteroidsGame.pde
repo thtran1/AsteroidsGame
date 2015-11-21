@@ -5,6 +5,7 @@ float areaY = (areaSize/2);
 float posX = screenSize/2;
 float posY = screenSize/2;
 int currentLevel = 1;
+int highestLevel = currentLevel;
 int points = 0;
 SpaceShip ship = new SpaceShip(screenSize/2, screenSize/2);
 SpaceShipControl control = new SpaceShipControl();
@@ -32,7 +33,7 @@ helpButton help = new helpButton();
 Menu menu = new Menu();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
 double gravity = 1.025;
-double maxTorque = 0.2;
+double maxTorque = 0.2; //0.2
 int rotateSpeed = 1;
 int topSpeed = 10;
 int bulletSpeed = 25;
@@ -42,9 +43,11 @@ float bulletS = 3;
 float bulletSpray = 0;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
-double shootDamage = 5;
-double robotShootDamage = 5+(currentLevel/5);
+double shootDamage = 5; //5
+double robotShootDamage = 3+(currentLevel/5); //3
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
+int intRobots = 3;
+int intFriendlys = 1;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
 float addHealth = 0;
@@ -55,13 +58,12 @@ boolean dPressed = false;
 boolean qPressed = false;
 boolean ePressed = false;
 boolean jPressed = false;
-boolean pPressed = false;
-boolean cPressed = false;
 boolean spacePressed = false;
 boolean gameStop = true;
 boolean defend = true;
 public void setup() 
 {
+  frameRate(60);
   size(900, 700);
   background(0);
   screenSize = height;
@@ -76,7 +78,7 @@ public void setup()
   for (int i = 0; i < 10; i++) {
     asteroid.add(new Asteroid());
   }
-  for (int i = 0; i < 150; i++) {
+  for (int i = 0; i < 0; i++) {
     robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
     rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
     rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
@@ -86,7 +88,7 @@ public void setup()
     robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
     robot.get(i).target = (int)(Math.random()*(friendly.size()+1));
   }
-  for (int i = 0; i < 140; i++) {
+  for (int i = 0; i < 0; i++) {
     friendly.add(new FriendlySpaceShip(height/2, height/2));
     fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
     fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
@@ -104,11 +106,6 @@ public void draw()
   if (gameStop) {
     menu.mainmenu();
   } else if (!gameStop) {
-    if (pPressed) {
-      gameStop = true;
-      menu.men = 1;
-      menu.mainmenu();
-    }
     if ((int)health.currentHealth > 0) {
       fill(0);
       rect(-100, -100, screenSize+100, screenSize+100);
@@ -194,6 +191,8 @@ public void draw()
       if (areaX == areaSize/2 && areaY == areaSize/2) {
         spacestation.show();
       }
+      fill(0, (abs(areaX-(areaSize/2))+abs(areaY-(areaSize/2)))*10);
+      rect(-100, -100, screenSize+100, screenSize+100);
       for (int i = 0; i<bullet.size(); i++) {
         bullet.get(i).move();
         bullet.get(i).show();
@@ -217,7 +216,7 @@ public void draw()
       }
       for (int i = 0; i < robot.size(); i++) {
         for (int x = 0; x <bullet.size(); x++) {
-          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+bullet.get(x).bulletSize) {
+          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 25+bullet.get(x).bulletSize) {
             robot.get(i).currentHealth-=shootDamage;
             bullet.remove(x);
             break;
@@ -305,11 +304,16 @@ public void draw()
         rect(0, 0, width, height);
         points+=10;
         currentLevel+=1;
+        if (currentLevel>highestLevel) {
+          highestLevel=currentLevel;
+        }
         gameStop = true;
         menu.men = 3;
       }
       ship.show();
       ship.move();
+
+      ///////////////////////////////////////
       fill(50);
       noStroke();
       rect(screenSize, 0, width-height, screenSize);//sidebar
@@ -354,115 +358,235 @@ class SpaceShipControl
 {
   double fX = ship.myCenterX;
   double fY = ship.myCenterY;
+  float mX, mY;
+  protected double radDir =-Math.PI/2;
   public void control() {
-    noStroke();
-    if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-      double dRadians = (ship.myPointDirection)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadians);
-      ellipse(-7, -3, 10, 2);
-      ellipse(-7, 3, 10, 2);
-      resetMatrix();
-      ship.accelerate(maxTorque, 0);
-    }
-    if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-      double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
-      double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansR);
-      ellipse(1, 4, 10, 2);
-      resetMatrix();
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansL);
-      ellipse(1, -4, 10, 2);
-      resetMatrix();
-      ship.accelerate(-maxTorque, 0);
-    }
-    if (qPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-      double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansR);
-      ellipse(5, -9, 10, 2);
-      resetMatrix();
-      ship.accelerate(maxTorque/1.5, -90);
-    }
-    if (ePressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-      double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansL);
-      ellipse(5, 9, 10, 2);
-      resetMatrix();
-      ship.accelerate(maxTorque/1.5, 90);
-    }
-    if (dPressed && !jPressed && currentFuel > 0) {
-      double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansL);
-      ellipse(3, 20, 8, 2);
-      resetMatrix();
-      ship.rotate(rotateSpeed);
-    }
-    if (aPressed && !jPressed && currentFuel > 0) {
-      double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-      fill(255, 0, 0);
-      translate((float)ship.myCenterX, (float)ship.myCenterY);
-      rotate((float)dRadiansR);
-      ellipse(3, -20, 8, 2);
-      resetMatrix();
-      ship.rotate(-rotateSpeed);
-    }
-    if (jPressed) {
-      ship.myDirectionX = 0;
-      ship.myDirectionY = 0;
-      double dRadians = (ship.myPointDirection)*(Math.PI/180);
-      if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
-        fX += ((maxTorque*100) * Math.cos(dRadians));    
-        fY += ((maxTorque*100) * Math.sin(dRadians));
+    if (!mousePressed) {
+      noStroke();
+      if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadians = (ship.myPointDirection)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadians);
+        ellipse(-7, -3, 10, 2);
+        ellipse(-7, 3, 10, 2);
+        resetMatrix();
+        ship.accelerate(maxTorque, 0);
       }
-      stroke(0, 0, 255);
-      line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
-    }
-    if (!jPressed) {
-      fX = ship.myCenterX;
-      fY = ship.myCenterY;
-      //fX = iX;
-      //fY = iY;
-    }
-    if (spacePressed && (int)shootCool == 0) {
-      if (bulletCoolDown > 0) {
-        bulletCoolDown-=0.4;
-        bullet.add(new Bullet(ship));
-        shootCool = shootCoolTime;
+      if (sPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
+        double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansR);
+        ellipse(1, 4, 10, 2);
+        resetMatrix();
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansL);
+        ellipse(1, -4, 10, 2);
+        resetMatrix();
+        ship.accelerate(-maxTorque, 0);
       }
-      if (bulletCoolDown<= 0) {
-        bulletCoolDown = -2;
+      if (qPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansR);
+        ellipse(5, -9, 10, 2);
+        resetMatrix();
+        ship.accelerate(maxTorque/1.5, -90);
       }
+      if (ePressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansL);
+        ellipse(5, 9, 10, 2);
+        resetMatrix();
+        ship.accelerate(maxTorque/1.5, 90);
+      }
+      if (dPressed && !jPressed && currentFuel > 0) {
+        double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansL);
+        ellipse(3, 20, 8, 2);
+        resetMatrix();
+        ship.rotate(rotateSpeed);
+      }
+      if (aPressed && !jPressed && currentFuel > 0) {
+        double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansR);
+        ellipse(3, -20, 8, 2);
+        resetMatrix();
+        ship.rotate(-rotateSpeed);
+      }
+      if (jPressed) {
+        ship.myDirectionX = 0;
+        ship.myDirectionY = 0;
+        double dRadians = (ship.myPointDirection)*(Math.PI/180);
+        if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
+          fX += ((maxTorque*100) * Math.cos(dRadians));    
+          fY += ((maxTorque*100) * Math.sin(dRadians));
+        }
+        stroke(0, 0, 255);
+        line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
+      }
+      if (!jPressed) {
+        fX = ship.myCenterX;
+        fY = ship.myCenterY;
+        //fX = iX;
+        //fY = iY;
+      }
+      if (spacePressed && (int)shootCool == 0) {
+        if (bulletCoolDown > 0) {
+          bulletCoolDown-=0.4;
+          bullet.add(new Bullet(ship));
+          shootCool = shootCoolTime;
+        }
+        if (bulletCoolDown<= 0) {
+          bulletCoolDown = -2;
+        }
+      }
+      if (bulletCoolDown<bulletCoolDownMax) {
+        bulletCoolDown+=0.04;
+      }
+      if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+        currentFuel-=0.02;
+      }
+      noStroke();
+      fill(0, 50);
+      double dRadians = ship.myPointDirection*(Math.PI/180);                 
+      int xRotatedTranslated, yRotatedTranslated;    
+      beginShape();         
+      for (int nI = 0; nI < ship.corners; nI++)    
+      {     
+        //rotate and translate the coordinates of the floater using current direction 
+        xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
+        yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
+        vertex(xRotatedTranslated, yRotatedTranslated);
+      }   
+      endShape(CLOSE);
     }
-    if (bulletCoolDown<bulletCoolDownMax) {
-      bulletCoolDown+=0.04;
+    if (mousePressed) {
+      noStroke();
+      radDir=Math.asin((mouseX-ship.getX())/(dist((float)ship.getX(), (float)ship.getY(), mouseX, mouseY)))-Math.PI/2;
+      if (ship.getY()-mouseY<0) {
+        radDir*=-1;
+      }
+      if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90&&dist(mouseX, mouseY, ship.getX(), ship.getY())>100) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadians = (ship.myPointDirection)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadians);
+        ellipse(-7, -3, 10, 2);
+        ellipse(-7, 3, 10, 2);
+        resetMatrix();
+        ship.accelerate(maxTorque, 0);
+      }
+      if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&(abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90)==false&&dist(mouseX, mouseY, ship.getX(), ship.getY())<100) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+        double dRadiansR = (ship.myPointDirection+30)*(Math.PI/180);
+        double dRadiansL = (ship.myPointDirection-30)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansR);
+        ellipse(1, 4, 10, 2);
+        resetMatrix();
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansL);
+        ellipse(1, -4, 10, 2);
+        resetMatrix();
+        ship.accelerate(-maxTorque, 0);
+      }
+      //if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&ship.getPointDirection()-(radDir*180/(Math.PI))>0) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+      //  double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+      //  fill(255, 0, 0);
+      //  translate((float)ship.myCenterX, (float)ship.myCenterY);
+      //  rotate((float)dRadiansR);
+      //  ellipse(5, -9, 10, 2);
+      //  resetMatrix();
+      //  ship.accelerate(maxTorque/1.5, -90);
+      //}
+      //if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&ship.getPointDirection()-(radDir*180/(Math.PI))<0) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+      //  double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+      //  fill(255, 0, 0);
+      //  translate((float)ship.myCenterX, (float)ship.myCenterY);
+      //  rotate((float)dRadiansL);
+      //  ellipse(5, 9, 10, 2);
+      //  resetMatrix();
+      //  ship.accelerate(maxTorque/1.5, 90);
+      //}
+      if ((ship.getPointDirection()-(radDir*180/(Math.PI))<0) && !jPressed && currentFuel > 0) {
+        double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansL);
+        ellipse(3, 20, 8, 2);
+        resetMatrix();
+        ship.rotate(rotateSpeed);
+        ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
+      }
+      if ((ship.getPointDirection()-(radDir*180/(Math.PI))>0) && !jPressed && currentFuel > 0) {
+        double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
+        fill(255, 0, 0);
+        translate((float)ship.myCenterX, (float)ship.myCenterY);
+        rotate((float)dRadiansR);
+        ellipse(3, -20, 8, 2);
+        resetMatrix();
+        ship.rotate(-rotateSpeed);
+        ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
+      }
+      if (jPressed) {
+        ship.myDirectionX = 0;
+        ship.myDirectionY = 0;
+        double dRadians = (ship.myPointDirection)*(Math.PI/180);
+        if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
+          fX += ((maxTorque*100) * Math.cos(dRadians));    
+          fY += ((maxTorque*100) * Math.sin(dRadians));
+        }
+        stroke(0, 0, 255);
+        line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
+      }
+      if (!jPressed) {
+        fX = ship.myCenterX;
+        fY = ship.myCenterY;
+        //fX = iX;
+        //fY = iY;
+      }
+      if (spacePressed && (int)shootCool == 0) {
+        if (bulletCoolDown > 0) {
+          bulletCoolDown-=0.4;
+          bullet.add(new Bullet(ship));
+          shootCool = shootCoolTime;
+        }
+        if (bulletCoolDown<= 0) {
+          bulletCoolDown = -2;
+        }
+      }
+      if (bulletCoolDown<bulletCoolDownMax) {
+        bulletCoolDown+=0.04;
+      }
+      if ((mousePressed) && currentFuel > 0) {
+        currentFuel-=0.02;
+      }
+      noStroke();
+      fill(0, 50);
+      double dRadians = ship.myPointDirection*(Math.PI/180);                 
+      int xRotatedTranslated, yRotatedTranslated;    
+      beginShape();         
+      for (int nI = 0; nI < ship.corners; nI++)    
+      {     
+        //rotate and translate the coordinates of the floater using current direction 
+        xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
+        yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
+        vertex(xRotatedTranslated, yRotatedTranslated);
+      }   
+      endShape(CLOSE);
     }
-    if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
-      currentFuel-=0.02;
-    }
-    noStroke();
-    fill(0, 50);
-    double dRadians = ship.myPointDirection*(Math.PI/180);                 
-    int xRotatedTranslated, yRotatedTranslated;    
-    beginShape();         
-    for (int nI = 0; nI < ship.corners; nI++)    
-    {     
-      //rotate and translate the coordinates of the floater using current direction 
-      xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
-      yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
-      vertex(xRotatedTranslated, yRotatedTranslated);
-    }   
-    endShape(CLOSE);
   }
 }
 
@@ -850,6 +974,7 @@ class RobotSpaceShip extends Floater
   protected int spaceShipSize = 1;
   protected double radDir =-Math.PI/2;
   protected double radDir1 =-Math.PI/2;
+  protected double radDir2 =-Math.PI/2;
   protected int sp;
   protected int spOffset;
   protected int rotOffset;
@@ -994,35 +1119,58 @@ class RobotSpaceShip extends Floater
       target = (int)(Math.random()*friendly.size()+1);
     }
     int z = target;
-    if (needHealth) {
+    //for (int i = 0; i < friendly.size()-1; i++) {
+    //  if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
+    //    target = i;
+    //    break;
+    //  }
+    //}
+    if (needHealth&&friendly.size()>0) {
       //myColor = color(250, 150, 150);
       int space = (int)(sp/4);
       int spaceOffset = spOffset;
       int rotateOffset = rotOffset*2;
       int strafeOffset = strOffset*2;
-      radDir1=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+      radDir1=Math.asin((friendly.get(z).getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, friendly.get(z).getX(), friendly.get(z).getY())))-Math.PI/2;
       radDir=Math.asin((spacestation.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, spacestation.getX(), spacestation.getY())))-Math.PI/2;
+      radDir2=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
       if (getY()-spacestation.getY()<0) {
         radDir*=-1;
       }
+      if (getY()-friendly.get(z).getY()<0) {
+        radDir1*=-1;
+      }
+      if (getY()-ship.getY()<0) {
+        radDir2*=-1;
+      }
       fill(255);
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //w
-        accelerate(maxTorque/3, 0);
+        accelerate(maxTorque, 0);
       }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))>90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
 
-        accelerate(-maxTorque/3, 0);
+        accelerate(-maxTorque, 0);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
 
-        accelerate(maxTorque/5, -90);
+        accelerate(maxTorque/1.5, -90);
       }
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
 
-        accelerate(maxTorque/5, 90);
+        accelerate(maxTorque/1.5, 90);
       }
       if (target<friendly.size()) {
         if (dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())>height/1.5) {
+          if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+
+            rotate(-rotateSpeed);
+          }
+        }
+        if (dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())<height/1.5) {
           if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
 
             rotate(rotateSpeed);
@@ -1030,22 +1178,117 @@ class RobotSpaceShip extends Floater
           if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
 
             rotate(-rotateSpeed);
+          }
+          if ((int)robotShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
+            robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+            robotShootCool = robotShootCoolTime;
           }
         }
       }
       if (target>=friendly.size()) {
         if (dist(ship.getX(), ship.getY(), getX(), getY())>height/1.5) {
-          if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
+          if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
 
             rotate(rotateSpeed);
           }
-          if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
+          if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
 
             rotate(-rotateSpeed);
           }
         }
+        if (dist(ship.getX(), ship.getY(), getX(), getY())<height/1.5) {
+          if ((myPointDirection-(radDir2*180/(Math.PI))<-rotateOffset)) { //d
+
+            rotate(rotateSpeed);
+          }
+          if ((myPointDirection-(radDir2*180/(Math.PI))>rotateOffset)) { //a
+
+            rotate(-rotateSpeed);
+          }
+          if ((int)robotShootCool==0&&myPointDirection-(radDir2*180/(Math.PI))<rotateOffset/1.5) {
+            robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+            robotShootCool = robotShootCoolTime;
+          }
+        }
       }
-      if ((int)robotShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
+      //shoot
+      //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
+      //  currentFuel-=0.01;
+      //}
+      int rectSizeX = 50;
+      float barSize = (float)(currentHealth/maxHealth)*rectSizeX;
+      if (currentHealth < maxHealth) {
+        //rectangle
+        fill(0);
+        stroke(150);
+        strokeWeight(1);
+        rect((float)getX()-rectSizeX/2, getY()+10, rectSizeX+1, 6);
+        strokeWeight(0.5);
+        //bar
+        fill(255, 0, 0);
+        noStroke();
+        rect((float)getX()+1-rectSizeX/2, getY()+11, barSize, 5);
+      }
+      if (currentHealth>maxHealth/1.5) {
+        needHealth = false;
+      }
+    }
+    if (needHealth&&friendly.size()==0) {
+      //myColor = color(250, 150, 150);
+      int space = (int)(sp/4);
+      int spaceOffset = spOffset;
+      int rotateOffset = rotOffset*2;
+      int strafeOffset = strOffset*2;
+      radDir=Math.asin((spacestation.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, spacestation.getX(), spacestation.getY())))-Math.PI/2;
+      radDir2=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+      if (getY()-spacestation.getY()<0) {
+        radDir*=-1;
+      }
+      if (getY()-ship.getY()<0) {
+        radDir2*=-1;
+      }
+      if (getY()-robot.get(z).getY()<0) {
+        radDir1*=-1;
+      }
+      fill(255);
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //w
+        accelerate(maxTorque, 0);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
+
+        accelerate(-maxTorque, 0);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))>strafeOffset) { //q
+
+        accelerate(maxTorque/1.5, -90);
+      }
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&myPointDirection-(radDir*180/(Math.PI))<-strafeOffset) { //e
+
+        accelerate(maxTorque/1.5, 90);
+      }
+
+      if (dist(ship.getX(), ship.getY(), getX(), getY())>height/1.5) {
+        if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+      }
+      if (dist(ship.getX(), ship.getY(), getX(), getY())<height/1.5) {
+        if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
+
+          rotate(rotateSpeed);
+        }
+        if ((myPointDirection-(radDir1*180/(Math.PI))>rotateOffset)) { //a
+
+          rotate(-rotateSpeed);
+        }
+      }
+
+      if ((int)robotShootCool==0&&myPointDirection-(radDir2*180/(Math.PI))<rotateOffset/1.5) {
         robotbullet.add(new RobotBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
         robotShootCool = robotShootCoolTime;
       }//shoot
@@ -1078,7 +1321,13 @@ class RobotSpaceShip extends Floater
         target = (int)(Math.random()*friendly.size()+1);
       }
       int z = target;
-      if (friendly.size()>0&&target<friendly.size()) {
+      //for (int i = 0; i < friendly.size()-1; i++) {
+      //  if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
+      //    target = i;
+      //    break;
+      //  }
+      //}
+      if (friendly.size()>0&&target<=friendly.size()) {
         int space = sp;
         int spaceOffset = spOffset;
         int rotateOffset = rotOffset;
@@ -1092,7 +1341,7 @@ class RobotSpaceShip extends Floater
         if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())>space+spaceOffset) { //w
           accelerate(maxTorque, 0);
         }
-        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(friendly.get(z).getX(), friendly.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
 
           accelerate(-maxTorque, 0);
         }
@@ -1135,7 +1384,7 @@ class RobotSpaceShip extends Floater
           needHealth = true;
         }
       }
-      if (friendly.size()==0&&target>=friendly.size()+1) {
+      if (friendly.size()==0||(friendly.size()>0&&target>=friendly.size()+1)) {
         //myColor = color(150, 250, 150);
         int space = sp;
         int spaceOffset = spOffset;
@@ -1150,7 +1399,7 @@ class RobotSpaceShip extends Floater
         if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //w
           accelerate(maxTorque, 0);
         }
-        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
 
           accelerate(-maxTorque, 0);
         }
@@ -1445,6 +1694,12 @@ class FriendlySpaceShip extends Floater
         target = (int)(Math.random()*robot.size());
       }
       int z = target;
+      for (int i = 0; i < robot.size()-1; i++) {
+        if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
+          target = i;
+          break;
+        }
+      }
       //myColor = color(250, 150, 150);
       int space = (int)(sp/4);
       int spaceOffset = spOffset;
@@ -1454,13 +1709,19 @@ class FriendlySpaceShip extends Floater
       radDir=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
       radDir2=Math.asin((spacestation.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, spacestation.getX(), spacestation.getY())))-Math.PI/2;
       if (getY()-robot.get(z).getY()<0) {
+        radDir1*=-1;
+      }
+      if (getY()-ship.getY()<0) {
         radDir*=-1;
+      }
+      if (getY()-spacestation.getY()<0) {
+        radDir2*=-1;
       }
       fill(255);
       if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir2*180/(Math.PI))))<90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //w
         accelerate(maxTorque/3, 0);
       }
-      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir2*180/(Math.PI))))>90&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
+      if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir2*180/(Math.PI))))<90)==false&&dist(spacestation.getX(), spacestation.getY(), getX(), getY())>space+spaceOffset) { //s
 
         accelerate(-maxTorque/3, 0);
       }
@@ -1524,6 +1785,12 @@ class FriendlySpaceShip extends Floater
         target = (int)(Math.random()*robot.size());
       }
       int z = target;
+      //for (int i = 0; i < robot.size()-1; i++) {
+      //  if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
+      //    target = i;
+      //    break;
+      //  }
+      //}
       if (defend) {
         //myColor = color(150, 250, 150);
         int space = sp;
@@ -1531,8 +1798,11 @@ class FriendlySpaceShip extends Floater
         int rotateOffset = rotOffset;
         int strafeOffset = strOffset;
         radDir1=Math.asin((robot.get(z).getX()-getX())/(dist((float)getX(), (float)getY(), robot.get(z).getX(), robot.get(z).getY())))-Math.PI/2;
-        radDir=Math.asin((ship.getX()-myCenterX)/(dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY())))-Math.PI/2;
+        radDir=Math.asin((ship.getX()-getX())/(dist((float)getX(), (float)getY(), ship.getX(), ship.getY())))-Math.PI/2;
         if (getY()-robot.get(z).getY()<0) {
+          radDir1*=-1;
+        }
+        if (getY()-ship.getY()<0) {
           radDir*=-1;
         }
         //myPointDirection=radDir*180/(Math.PI);
@@ -1540,7 +1810,7 @@ class FriendlySpaceShip extends Floater
         if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //w
           accelerate(maxTorque, 0);
         }
-        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))>90&&dist(ship.getX(), ship.getY(), getX(), getY())>space+spaceOffset) { //s
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(ship.getX(), ship.getY(), getX(), getY())<space-spaceOffset) { //s
 
           accelerate(-maxTorque, 0);
         }
@@ -1552,7 +1822,7 @@ class FriendlySpaceShip extends Floater
 
           accelerate(maxTorque/1.5, 90);
         }
-        if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())>height/.5) {
+        if (dist(ship.getX(), ship.getY(), getX(), getY())>height/1.5) {
           if ((myPointDirection-(radDir*180/(Math.PI))<-rotateOffset)) { //d
 
             rotate(rotateSpeed);
@@ -1561,7 +1831,8 @@ class FriendlySpaceShip extends Floater
 
             rotate(-rotateSpeed);
           }
-        } else if (dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<height/.5) {
+        } 
+        if (dist(ship.getX(), ship.getY(), getX(), getY())<height/1.5) {
           if ((myPointDirection-(radDir1*180/(Math.PI))<-rotateOffset)) { //d
 
             rotate(rotateSpeed);
@@ -1570,11 +1841,12 @@ class FriendlySpaceShip extends Floater
 
             rotate(-rotateSpeed);
           }
+          if ((int)friendlyShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
+            friendlybullet.add(new FriendlyBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
+            friendlyShootCool = friendlyShootCoolTime;
+          }
         }
-        if ((int)friendlyShootCool==0&&myPointDirection-(radDir1*180/(Math.PI))<rotateOffset/1.5) {
-          friendlybullet.add(new FriendlyBullet((int)myCenterX, (int)myCenterY, (int)myPointDirection, myDirectionX, myDirectionY));
-          friendlyShootCool = friendlyShootCoolTime;
-        }//shoot
+        //shoot
         //if ((wPressed || aPressed || sPressed || dPressed || qPressed || ePressed) && currentFuel > 0) {
         //  currentFuel-=0.01;
         //}
@@ -1610,7 +1882,7 @@ class FriendlySpaceShip extends Floater
         if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())>space+spaceOffset) { //w
           accelerate(maxTorque, 0);
         }
-        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90&&dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
+        if ((abs((float)myDirectionX)+abs((float)myDirectionY))<topSpeed&&(abs((float)(myPointDirection-(radDir*180/(Math.PI))))<90)==false&&dist(robot.get(z).getX(), robot.get(z).getY(), getX(), getY())<space-spaceOffset) { //s
 
           accelerate(-maxTorque, 0);
         }
@@ -2446,9 +2718,13 @@ class Menu
       textSize(50);
       textAlign(CENTER, CENTER);
       text("ASTEROIDS", width/2, 100);
+      fill(255, 100-menuFlash);
       textSize(30);
+      text("HIGH SCORE: " + highestLevel, width/2, 140);
+      textSize(30);
+      fill(255);
       text("PLAY", width/2, height-180);
-      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=10;
         men = 4;
       }
@@ -2490,6 +2766,7 @@ class Menu
       rect((width/2)-20, 400, 40, 40);
       //continue
       //text
+      fill(255);
       textSize(50);
       textAlign(CENTER, CENTER);
       text("INSTRUCTIONS", width/2, 75);
@@ -2529,55 +2806,18 @@ class Menu
       textAlign(CENTER, CENTER);
       textSize(30);
       text("CONTINUE", width/2, height-180);
-      if (menuFlash<=0&&(cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
+      if (menuFlash<=0&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
         menuFlash=100;
         gameStop = false;
-      }
-    }
-    if (men == 1) {
-      noStroke();
-      menuFlash-=100;
-      fill(0, 0);
-      stroke(255);
-      rect((width/2)-100, height-200, 200, 50);
-      fill(255);
-      textSize(50);
-      textAlign(CENTER, CENTER);
-      text("PAUSED", width/2, 100);
-      textSize(30);
-      text("RESUME", width/2, height-180);
-      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(height/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
-        menuFlash=100;
-        gameStop = false;
-      }
-    }
-    if (men == 2) {
-      noStroke();
-      fill(menuFlash*2.55, 0, 0);
-      menuFlash-=0.1;
-      rect(0, 0, width, height);
-      stroke(255);
-      rect((width/2)-100, height-200, 200, 50);
-      fill(255);
-      textSize(50);
-      textAlign(CENTER, CENTER);
-      text("GAME OVER", width/2, 100);
-      textSize(30);
-      text("LEVEL: " + currentLevel, width/2, 140);
-      textSize(30);
-      text("AGAIN?", width/2, height-180);
-      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
-        menuFlash=100;
-        gameStop = false;
-        intRobotsAlive=2;
-        intFriendlysAlive=1;
+        intRobotsAlive=intRobots;
+        intFriendlysAlive=intFriendlys;
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
           rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
           rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
         }
         for (int i = 0; i < intFriendlysAlive; i++) {
-          friendly.add(new FriendlySpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
+          friendly.add(new FriendlySpaceShip(height/2, height/2));
           fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
           fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
         }
@@ -2603,6 +2843,50 @@ class Menu
         // robot.setY((int)((((areaSize/2)-abs((int)robotAreaY-areaY))*height)-(areaY*height)));
       }
     }
+    if (men == 1) {
+      noStroke();
+      menuFlash-=99;
+      fill(0, 0);
+      stroke(255);
+      rect((width/2)-100, height-200, 200, 50);
+      fill(255);
+      textSize(50);
+      textAlign(CENTER, CENTER);
+      text("PAUSED", width/2, 100);
+      fill(255, 100-menuFlash);
+      textSize(30);
+      text("HIGH SCORE: " + highestLevel, width/2, 140);
+      fill(255);
+      textSize(30);
+      text("RESUME", width/2, height-180);
+      if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(height/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+        menuFlash=100;
+        gameStop = false;
+      }
+    }
+    if (men == 2) {
+      noStroke();
+      fill(menuFlash*2.55, 0, 0);
+      menuFlash-=0.1;
+      rect(0, 0, width, height);
+      stroke(255);
+      rect((width/2)-100, height-200, 200, 50);
+      fill(255);
+      textSize(50);
+      textAlign(CENTER, CENTER);
+      text("GAME OVER", width/2, 100);
+      textSize(30);
+      fill(255, 100-menuFlash);
+      text("LEVEL: " + currentLevel, width/2, 140);
+      text("HIGH SCORE: " + highestLevel, width/2, 170);
+      fill(255);
+      textSize(30);
+      text("AGAIN?", width/2, height-180);
+      if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+        menuFlash=100;
+        men = 0;
+      }
+    }
     if (men == 3) {
       noStroke();
       fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
@@ -2619,7 +2903,10 @@ class Menu
       textAlign(CENTER, CENTER);
       text("LEVEL: " + currentLevel, width/2, 100);
       textSize(30);
-      text("POINTS: " + points, width/2, 140);
+      fill(255, 100-menuFlash);
+      text("HIGH SCORE: " + highestLevel, width/2, 140);
+      text("POINTS: " + points, width/2, 170);
+      fill(255);
       text("CONTINUE", width/2, height-180);
       textAlign(CENTER, CENTER);
       textSize(12);
@@ -2670,7 +2957,7 @@ class Menu
         bulletCoolDownMax+=5;
         noStroke();
       }
-      if (cPressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (spacePressed||spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=100;
         int randX = (int)Math.random()*areaSize;
         int randY = (int)Math.random()*areaSize;
@@ -2738,10 +3025,15 @@ public void keyPressed()
     spacePressed = true;
   }
   if (keyCode == 'P') {
-    pPressed = true;
-  }
-  if (keyCode == 'C') {
-    cPressed = true;
+    if (!gameStop) {
+      gameStop = true;
+      menu.men = 1;
+      menu.mainmenu();
+    }
+    if (gameStop&&menu.menuFlash<1) {
+      menu.menuFlash= 100;
+      gameStop = false;
+    }
   }
   if (keyCode == 'L') {
     if (!defend) {
@@ -2783,11 +3075,5 @@ public void keyReleased() {
   }
   if (keyCode == ' ') {
     spacePressed = false;
-  }
-  if (keyCode == 'P') {
-    pPressed = false;
-  }
-  if (keyCode == 'C') {
-    cPressed = false;
   }
 }
