@@ -2811,12 +2811,12 @@ class Menu
         gameStop = false;
         intRobotsAlive=intRobots;
         intFriendlysAlive=intFriendlys;
-        for (int i = 0; i < intRobotsAlive; i++) {
+        for (int i = 0; i < intRobots; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
           rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
           rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
         }
-        for (int i = 0; i < intFriendlysAlive; i++) {
+        for (int i = 0; i < intFriendlys; i++) {
           friendly.add(new FriendlySpaceShip(height/2, height/2));
           fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
           fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
