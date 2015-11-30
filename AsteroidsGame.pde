@@ -122,7 +122,7 @@ public void draw()
           addHealth+=1;
         }
       }
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         if (dist(spacestation.getX(), spacestation.getY(), robot.get(i).getX(), robot.get(i).getY())<50*spacestation.stationSize)
         {
           if (robot.get(i).currentHealth < robot.get(i).maxHealth && robot.get(i).currentHealth>0) {
@@ -133,7 +133,7 @@ public void draw()
           }
         }
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         if (dist(spacestation.getX(), spacestation.getY(), friendly.get(i).getX(), friendly.get(i).getY())<50*spacestation.stationSize)
         {
           if (friendly.get(i).currentHealth < friendly.get(i).maxHealth && friendly.get(i).currentHealth>0) {
@@ -154,18 +154,18 @@ public void draw()
       if ((int)shootCool>0) {
         shootCool-=1;
       }
-      for (int i = 0; i <robot.size(); i++) {
+      for (int i = 0; i <robot.size (); i++) {
         if ((int)robot.get(i).robotShootCool>0) {
           robot.get(i).robotShootCool-=1;
         }
       }
-      for (int i = 0; i <friendly.size(); i++) {
+      for (int i = 0; i <friendly.size (); i++) {
         if ((int)friendly.get(i).friendlyShootCool>0) {
           friendly.get(i).friendlyShootCool-=1;
         }
       }
       //if (areaX != areaSize/2 || areaY != areaSize/2) {
-      for (int i = 0; i < asteroid.size(); i++) {
+      for (int i = 0; i < asteroid.size (); i++) {
         asteroid.get(i).show();
         asteroid.get(i).move();
       }
@@ -193,36 +193,36 @@ public void draw()
       }
       fill(0, (abs(areaX-(areaSize/2))+abs(areaY-(areaSize/2)))*10);
       rect(-100, -100, screenSize+100, screenSize+100);
-      for (int i = 0; i<bullet.size(); i++) {
+      for (int i = 0; i<bullet.size (); i++) {
         bullet.get(i).move();
         bullet.get(i).show();
         if (abs(bullet.get(i).getX()-height/2)>=height*3||abs(bullet.get(i).getY()-height/2)>=height*3) {
           bullet.remove(i);
         }
       }
-      for (int i = 0; i<robotbullet.size(); i++) {
+      for (int i = 0; i<robotbullet.size (); i++) {
         robotbullet.get(i).move();
         robotbullet.get(i).show();
         if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
           robotbullet.remove(i);
         }
       }
-      for (int i = 0; i<friendlybullet.size(); i++) {
+      for (int i = 0; i<friendlybullet.size (); i++) {
         friendlybullet.get(i).move();
         friendlybullet.get(i).show();
         if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
           friendlybullet.remove(i);
         }
       }
-      for (int i = 0; i < robot.size(); i++) {
-        for (int x = 0; x <bullet.size(); x++) {
+      for (int i = 0; i < robot.size (); i++) {
+        for (int x = 0; x <bullet.size (); x++) {
           if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 25+bullet.get(x).bulletSize) {
             robot.get(i).currentHealth-=shootDamage;
             bullet.remove(x);
             break;
           }
         }
-        for (int x = 0; x <friendlybullet.size(); x++) {
+        for (int x = 0; x <friendlybullet.size (); x++) {
           if (dist(friendlybullet.get(x).getX(), friendlybullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+friendlybullet.get(x).bulletSize) {
             robot.get(i).currentHealth-=shootDamage;
             friendlybullet.remove(x);
@@ -230,13 +230,13 @@ public void draw()
           }
         }
       }
-      for (int x = 0; x < robotbullet.size(); x++) {
+      for (int x = 0; x < robotbullet.size (); x++) {
         if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
           health.currentHealth-=robotShootDamage;
           robotbullet.remove(x);
           break;
         }
-        for (int y = 0; y < friendly.size(); y++) {
+        for (int y = 0; y < friendly.size (); y++) {
           if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), friendly.get(y).getX(), friendly.get(y).getY()) < 15+robotbullet.get(x).bulletSize) {
             friendly.get(y).currentHealth-=robotShootDamage;
             robotbullet.remove(x);
@@ -245,7 +245,7 @@ public void draw()
         }
       }
       control.control(); //spaceship controls
-      for (int i = 0; i < robot.size(); i++) {
+      for (int i = 0; i < robot.size (); i++) {
         if (robot.get(i).dead == false) {
           if (robot.get(i).currentHealth<=0) {
             robot.get(i).dead = true;
@@ -269,7 +269,7 @@ public void draw()
           }
         }
       }
-      for (int i = 0; i < friendly.size(); i++) {
+      for (int i = 0; i < friendly.size (); i++) {
         if (friendly.get(i).dead == false) {
           if (friendly.get(i).currentHealth<=0) {
             friendly.get(i).dead = true;
@@ -294,7 +294,7 @@ public void draw()
         }
       }
       if (robot.size() == 0) {
-        for (int i = 0; i<friendly.size(); i++) {
+        for (int i = 0; i<friendly.size (); i++) {
           friendly.remove(i);
           fAX.remove(i);
           fAY.remove(i);
@@ -335,12 +335,12 @@ public void draw()
       rect(-100, -100, screenSize+100, screenSize+100);
       fill(255);
     } else if ((int)health.currentHealth <= 0) {
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         robot.remove(i);
         rAX.remove(i);
         rAY.remove(i);
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         friendly.remove(i);
         fAX.remove(i);
         fAY.remove(i);
@@ -731,11 +731,11 @@ class SpaceShip extends Floater
       myCenterX = 0;
       fuelcan.isTouched = false;
       fuelcan.setX(fuelcan.getX()-screenSize);
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()-(screenSize));
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         friendly.get(i).reset();
         friendly.get(i).setX(friendly.get(i).getX()-(screenSize));
       }
@@ -743,16 +743,16 @@ class SpaceShip extends Floater
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       }   
-      for (int i = 0; i < asteroid.size(); i++) {
+      for (int i = 0; i < asteroid.size (); i++) {
         asteroid.get(i).reset();
       }
-      for (int i = 0; i < bullet.size(); i++) {
+      for (int i = 0; i < bullet.size (); i++) {
         bullet.get(i).setX(bullet.get(i).getX()-(screenSize));
       }
-      for (int i = 0; i < robotbullet.size(); i++) {
+      for (int i = 0; i < robotbullet.size (); i++) {
         robotbullet.get(i).setX(robotbullet.get(i).getX()-(screenSize));
       }
-      for (int i = 0; i < friendlybullet.size(); i++) {
+      for (int i = 0; i < friendlybullet.size (); i++) {
         friendlybullet.get(i).setX(friendlybullet.get(i).getX()-(screenSize));
       }
     } else if (myCenterX<0 && areaX>0)
@@ -761,11 +761,11 @@ class SpaceShip extends Floater
       myCenterX = screenSize;
       fuelcan.isTouched = false;
       fuelcan.setX(fuelcan.getX()+screenSize);
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()+(screenSize));
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         friendly.get(i).reset();
         friendly.get(i).setX(friendly.get(i).getX()+(screenSize));
       }
@@ -773,16 +773,16 @@ class SpaceShip extends Floater
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       }
-      for (int i = 0; i < asteroid.size(); i++) {
+      for (int i = 0; i < asteroid.size (); i++) {
         asteroid.get(i).reset();
       }
-      for (int i = 0; i < bullet.size(); i++) {
+      for (int i = 0; i < bullet.size (); i++) {
         bullet.get(i).setX(bullet.get(i).getX()+(screenSize));
       }
-      for (int i = 0; i < robotbullet.size(); i++) {
+      for (int i = 0; i < robotbullet.size (); i++) {
         robotbullet.get(i).setX(robotbullet.get(i).getX()+(screenSize));
       }
-      for (int i = 0; i < friendlybullet.size(); i++) {
+      for (int i = 0; i < friendlybullet.size (); i++) {
         friendlybullet.get(i).setX(friendlybullet.get(i).getX()+(screenSize));
       }
     }    
@@ -792,11 +792,11 @@ class SpaceShip extends Floater
       myCenterY = 0;
       fuelcan.isTouched = false;
       fuelcan.setY(fuelcan.getY()-screenSize);
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()-(screenSize));
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         friendly.get(i).reset();
         friendly.get(i).setY(friendly.get(i).getY()-(screenSize));
       }
@@ -804,16 +804,16 @@ class SpaceShip extends Floater
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       } 
-      for (int i = 0; i < asteroid.size(); i++) {
+      for (int i = 0; i < asteroid.size (); i++) {
         asteroid.get(i).reset();
       }
-      for (int i = 0; i < bullet.size(); i++) {
+      for (int i = 0; i < bullet.size (); i++) {
         bullet.get(i).setY(bullet.get(i).getY()-(screenSize));
       }
-      for (int i = 0; i < robotbullet.size(); i++) {
+      for (int i = 0; i < robotbullet.size (); i++) {
         robotbullet.get(i).setY(robotbullet.get(i).getY()-(screenSize));
       }
-      for (int i = 0; i < friendlybullet.size(); i++) {
+      for (int i = 0; i < friendlybullet.size (); i++) {
         friendlybullet.get(i).setY(friendlybullet.get(i).getY()-(screenSize));
       }
     } else if (myCenterY < 0 && areaY>0)
@@ -822,11 +822,11 @@ class SpaceShip extends Floater
       myCenterY = screenSize;
       fuelcan.isTouched = false;
       fuelcan.setY(fuelcan.getY()+screenSize);
-      for (int i = 0; i<robot.size(); i++) {
+      for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()+(screenSize));
       }
-      for (int i = 0; i<friendly.size(); i++) {
+      for (int i = 0; i<friendly.size (); i++) {
         friendly.get(i).reset();
         friendly.get(i).setY(friendly.get(i).getY()+(screenSize));
       }
@@ -834,16 +834,16 @@ class SpaceShip extends Floater
       for (int i = 0; i < stars.length; i++) {
         stars[i] = new Star();
       }     
-      for (int i = 0; i < asteroid.size(); i++) {
+      for (int i = 0; i < asteroid.size (); i++) {
         asteroid.get(i).reset();
       }
-      for (int i = 0; i < bullet.size(); i++) {
+      for (int i = 0; i < bullet.size (); i++) {
         bullet.get(i).setY(bullet.get(i).getY()+(screenSize));
       }
-      for (int i = 0; i < robotbullet.size(); i++) {
+      for (int i = 0; i < robotbullet.size (); i++) {
         robotbullet.get(i).setY(robotbullet.get(i).getY()+(screenSize));
       }
-      for (int i = 0; i < friendlybullet.size(); i++) {
+      for (int i = 0; i < friendlybullet.size (); i++) {
         friendlybullet.get(i).setY(friendlybullet.get(i).getY()+(screenSize));
       }
     }
@@ -1694,7 +1694,7 @@ class FriendlySpaceShip extends Floater
         target = (int)(Math.random()*robot.size());
       }
       int z = target;
-      for (int i = 0; i < robot.size()-1; i++) {
+      for (int i = 0; i < robot.size ()-1; i++) {
         if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
           break;
@@ -2558,12 +2558,12 @@ class areaMap extends Gui
     aY = ((areaY)*7.24);
     apX = ((areaX+posX)*7.24);
     apY = ((areaY+posY)*7.24);
-    for (int i = 0; i < robot.size(); i++) {
+    for (int i = 0; i < robot.size (); i++) {
       fill(robot.get(i).myColor);
       noStroke();
       ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(rAX.get(i)*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(rAY.get(i)*7.24)+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
     }
-    for (int i = 0; i < friendly.size(); i++) {
+    for (int i = 0; i < friendly.size (); i++) {
       fill(friendly.get(i).myColor);
       noStroke();
       ellipse((float)(screenSize+9)+(rectSizeX/areaSize/2)+(fAX.get(i)*7.24)+1.5, (float)rectY+(rectSizeX/areaSize/2)+(fAY.get(i)*7.24)+1.5, rectSizeX/2/areaSize, rectSizeX/2/areaSize);
@@ -2724,7 +2724,7 @@ class Menu
       textSize(30);
       fill(255);
       text("PLAY", width/2, height-180);
-      if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
+      if (menuFlash<=0&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
         menuFlash=10;
         men = 4;
       }
@@ -2809,14 +2809,24 @@ class Menu
       if (menuFlash<=0&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
         menuFlash=100;
         gameStop = false;
+        for (int i = 0; i<robot.size (); i++) {
+          robot.remove(i);
+          rAX.remove(i);
+          rAY.remove(i);
+        }
+        for (int i = 0; i<friendly.size (); i++) {
+          friendly.remove(i);
+          fAX.remove(i);
+          fAY.remove(i);
+        }
         intRobotsAlive=intRobots;
         intFriendlysAlive=intFriendlys;
-        for (int i = 0; i < intRobots; i++) {
+        for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
           rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
           rAY.add(i, (float)((areaY)+(robot.get(i).getY()-(screenSize/2))/screenSize));
         }
-        for (int i = 0; i < intFriendlys; i++) {
+        for (int i = 0; i < intFriendlysAlive; i++) {
           friendly.add(new FriendlySpaceShip(height/2, height/2));
           fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
           fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
@@ -2830,11 +2840,11 @@ class Menu
         robotShootDamage = 5+(currentLevel/5);
         health.currentHealth = health.maxHealth;
         currentFuel = fuel.maxFuel;
-        for (int i = 0; i<robot.size(); i++) {
+        for (int i = 0; i<robot.size (); i++) {
           robot.get(i).maxHealth = 50;
           robot.get(i).currentHealth = robot.get(i).maxHealth;
         }
-        for (int i = 0; i<friendly.size(); i++) {
+        for (int i = 0; i<friendly.size (); i++) {
           friendly.get(i).maxHealth = 50;
           friendly.get(i).currentHealth = friendly.get(i).maxHealth;
           friendly.get(i).target = (int)(Math.random()*robot.size());
@@ -2882,6 +2892,16 @@ class Menu
       fill(255);
       textSize(30);
       text("AGAIN?", width/2, height-180);
+      for (int i = 0; i<robot.size (); i++) {
+        robot.remove(i);
+        rAX.remove(i);
+        rAY.remove(i);
+      }
+      for (int i = 0; i<friendly.size (); i++) {
+        friendly.remove(i);
+        fAX.remove(i);
+        fAY.remove(i);
+      }
       if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=100;
         men = 0;
@@ -2977,7 +2997,7 @@ class Menu
         robotShootDamage += (currentLevel/5);
         health.currentHealth+= (health.maxHealth-health.currentHealth)/4;
         currentFuel += (fuel.maxFuel-currentFuel)/4;
-        for (int i = 0; i<robot.size(); i++) {
+        for (int i = 0; i<robot.size (); i++) {
           robot.get(i).maxHealth += (currentLevel*2.5);
           robot.get(i).currentHealth = robot.get(i).maxHealth;
           robot.get(i).setAreaX((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
@@ -2986,7 +3006,7 @@ class Menu
           robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
           //myCenterY=(float)((screenSize/2)+(screenSize*(robotAreaY-areaY)));
         }
-        for (int i = 0; i<friendly.size(); i++) {
+        for (int i = 0; i<friendly.size (); i++) {
           friendly.get(i).maxHealth += (currentLevel*2.5);
           friendly.get(i).currentHealth = friendly.get(i).maxHealth;
           friendly.get(i).target = (int)(Math.random()*robot.size());
@@ -3060,7 +3080,7 @@ public void keyReleased() {
   if (keyCode == 'D' || keyCode == RIGHT) {
     dPressed = false;
   }
-  if (keyCode == 'A' || keyCode == LEFT) {
+  if (keyCode == 'A' || keyCode == LEFT) { 
     aPressed = false;
   }
   if (keyCode == 'J' && (int)hyperjump.hyperCool == 0) {
