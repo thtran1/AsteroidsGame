@@ -61,6 +61,7 @@ boolean jPressed = false;
 boolean spacePressed = false;
 boolean gameStop = true;
 boolean defend = true;
+boolean crazyMode = false;
 public void setup() 
 {
   frameRate(60);
@@ -521,23 +522,9 @@ class SpaceShipControl
       //  ship.accelerate(maxTorque/1.5, 90);
       //}
       if ((ship.getPointDirection()-(radDir*180/(Math.PI))<0) && !jPressed && currentFuel > 0) {
-        double dRadiansL = (ship.myPointDirection-90)*(Math.PI/180);
-        fill(255, 0, 0);
-        translate((float)ship.myCenterX, (float)ship.myCenterY);
-        rotate((float)dRadiansL);
-        ellipse(3, 20, 8, 2);
-        resetMatrix();
-        ship.rotate(rotateSpeed);
         ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
       }
       if ((ship.getPointDirection()-(radDir*180/(Math.PI))>0) && !jPressed && currentFuel > 0) {
-        double dRadiansR = (ship.myPointDirection+90)*(Math.PI/180);
-        fill(255, 0, 0);
-        translate((float)ship.myCenterX, (float)ship.myCenterY);
-        rotate((float)dRadiansR);
-        ellipse(3, -20, 8, 2);
-        resetMatrix();
-        ship.rotate(-rotateSpeed);
         ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
       }
       if (jPressed) {
@@ -2724,7 +2711,33 @@ class Menu
       textSize(30);
       fill(255);
       text("PLAY", width/2, height-180);
-      if (menuFlash<=0&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
+      if (crazyMode) {
+        textSize(15);
+        text("developer mode",100,250);
+        text("intRobots: " + intRobots,100,300);
+        text("+",170,300);
+        text("-",200,300);
+        text("intFriendlys: " + intFriendlys,100,350);
+        text("+",170,350);
+        text("-",200,350);
+        if (menuFlash<=0&&(mousePressed&&mouseX>160&&mouseX<180&&mouseY>290&&mouseY<310)) {
+          intRobots+=1;
+          menuFlash=5;
+        }
+        if (menuFlash<=0&&(mousePressed&&mouseX>190&&mouseX<210&&mouseY>290&&mouseY<310&&intRobots>0)) {
+          intRobots-=1;
+          menuFlash=5;
+        }
+        if (menuFlash<=0&&(mousePressed&&mouseX>160&&mouseX<180&&mouseY>340&&mouseY<360)) {
+          intFriendlys+=1;
+          menuFlash=5;
+        }
+        if (menuFlash<=0&&(mousePressed&&mouseX>190&&mouseX<210&&mouseY>340&&mouseY<360&&intFriendlys>0)) {
+          intFriendlys-=1;
+          menuFlash=5;
+        }
+      }
+      if (menuFlash<=50&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
         menuFlash=10;
         men = 4;
       }
@@ -3060,6 +3073,11 @@ public void keyPressed()
       defend = true;
     } else if (defend) {
       defend = false;
+    }
+  }
+  if (keyCode == 'T') {
+    if (gameStop&&menu.men == 0) {
+      crazyMode = true;
     }
   }
 }
