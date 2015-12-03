@@ -41,6 +41,7 @@ float bulletCoolDown = 10;
 float bulletCoolDownMax = 10;
 float bulletS = 3;
 float bulletSpray = 0;
+int shootMode = 0;
 int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
 double shootDamage = 5; //5
@@ -218,7 +219,15 @@ public void draw()
       for (int i = 0; i < robot.size (); i++) {
         for (int x = 0; x <bullet.size (); x++) {
           if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 25+bullet.get(x).bulletSize) {
-            robot.get(i).currentHealth-=shootDamage;
+            if (shootMode == 0) {
+              robot.get(i).currentHealth-=shootDamage;
+            }
+            if (shootMode == 1) {
+              robot.get(i).currentHealth-=shootDamage/3;
+            }
+            if (shootMode == 2) {
+              robot.get(i).currentHealth-=shootDamage*10;
+            }
             bullet.remove(x);
             break;
           }
@@ -444,9 +453,23 @@ class SpaceShipControl
       }
       if (spacePressed && (int)shootCool == 0) {
         if (bulletCoolDown > 0) {
-          bulletCoolDown-=0.8;
-          bullet.add(new Bullet(ship));
           shootCool = shootCoolTime;
+          if (shootMode == 0) {
+            bulletCoolDown-=0.6;
+            bullet.add(new Bullet(ship));
+            shootCool = shootCoolTime;
+          }
+          if (shootMode == 1) {
+            bulletCoolDown-=0.8;
+            bullet.add(new Bullet(ship));
+            bullet.add(new Bullet(ship));
+            bullet.add(new Bullet(ship));
+          }
+          if (shootMode == 2) {
+            bulletCoolDown-=3;
+            bullet.add(new Bullet(ship));
+            shootCool = shootCoolTime*5;
+          }
         }
         if (bulletCoolDown<= 0) {
           bulletCoolDown = -2;
@@ -472,71 +495,71 @@ class SpaceShipControl
       }   
       endShape(CLOSE);
     }
-    if (mousePressed) {
-      noStroke();
-      radDir=Math.asin((mouseX-ship.getX())/(dist((float)ship.getX(), (float)ship.getY(), mouseX, mouseY)))-Math.PI/2;
-      if (ship.getY()-mouseY<0) {
-        radDir*=-1;
-      }
-      if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90&&dist(mouseX, mouseY, ship.getX(), ship.getY())>50) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-        ship.accelerate(maxTorque, 0);
-      }
-      if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&(abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90)==false&&dist(mouseX, mouseY, ship.getX(), ship.getY())<150) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-        ship.accelerate(-maxTorque, 0);
-      }
-      if ((ship.getPointDirection()-(radDir*180/(Math.PI))<0) && !jPressed && currentFuel > 0) {
-        ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
-      }
-      if ((ship.getPointDirection()-(radDir*180/(Math.PI))>0) && !jPressed && currentFuel > 0) {
-        ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
-      }
-      if (jPressed) {
-        ship.myDirectionX = 0;
-        ship.myDirectionY = 0;
-        double dRadians = (ship.myPointDirection)*(Math.PI/180);
-        if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
-          fX += ((maxTorque*100) * Math.cos(dRadians));    
-          fY += ((maxTorque*100) * Math.sin(dRadians));
-        }
-        stroke(0, 0, 255);
-        line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
-      }
-      if (!jPressed) {
-        fX = ship.myCenterX;
-        fY = ship.myCenterY;
-        //fX = iX;
-        //fY = iY;
-      }
-      if (spacePressed && (int)shootCool == 0) {
-        if (bulletCoolDown > 0) {
-          bulletCoolDown-=0.8;
-          bullet.add(new Bullet(ship));
-          shootCool = shootCoolTime;
-        }
-        if (bulletCoolDown<= 0) {
-          bulletCoolDown = -2;
-        }
-      }
-      if (bulletCoolDown<bulletCoolDownMax) {
-        bulletCoolDown+=0.1;
-      }
-      if ((mousePressed) && currentFuel > 0) {
-        currentFuel-=0.02;
-      }
-      noStroke();
-      fill(0, 50);
-      double dRadians = ship.myPointDirection*(Math.PI/180);                 
-      int xRotatedTranslated, yRotatedTranslated;    
-      beginShape();         
-      for (int nI = 0; nI < ship.corners; nI++)    
-      {     
-        //rotate and translate the coordinates of the floater using current direction 
-        xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
-        yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
-        vertex(xRotatedTranslated, yRotatedTranslated);
-      }   
-      endShape(CLOSE);
-    }
+    // if (mousePressed) {
+    //   noStroke();
+    //   radDir=Math.asin((mouseX-ship.getX())/(dist((float)ship.getX(), (float)ship.getY(), mouseX, mouseY)))-Math.PI/2;
+    //   if (ship.getY()-mouseY<0) {
+    //     radDir*=-1;
+    //   }
+    //   if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90&&dist(mouseX, mouseY, ship.getX(), ship.getY())>50) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+    //     ship.accelerate(maxTorque, 0);
+    //   }
+    //   if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&(abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90)==false&&dist(mouseX, mouseY, ship.getX(), ship.getY())<150) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
+    //     ship.accelerate(-maxTorque, 0);
+    //   }
+    //   if ((ship.getPointDirection()-(radDir*180/(Math.PI))<0) && !jPressed && currentFuel > 0) {
+    //     ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
+    //   }
+    //   if ((ship.getPointDirection()-(radDir*180/(Math.PI))>0) && !jPressed && currentFuel > 0) {
+    //     ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
+    //   }
+    //   if (jPressed) {
+    //     ship.myDirectionX = 0;
+    //     ship.myDirectionY = 0;
+    //     double dRadians = (ship.myPointDirection)*(Math.PI/180);
+    //     if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
+    //       fX += ((maxTorque*100) * Math.cos(dRadians));    
+    //       fY += ((maxTorque*100) * Math.sin(dRadians));
+    //     }
+    //     stroke(0, 0, 255);
+    //     line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
+    //   }
+    //   if (!jPressed) {
+    //     fX = ship.myCenterX;
+    //     fY = ship.myCenterY;
+    //     //fX = iX;
+    //     //fY = iY;
+    //   }
+    //   if (spacePressed && (int)shootCool == 0) {
+    //     if (bulletCoolDown > 0) {
+    //       bulletCoolDown-=0.8;
+    //       bullet.add(new Bullet(ship));
+    //       shootCool = shootCoolTime;
+    //     }
+    //     if (bulletCoolDown<= 0) {
+    //       bulletCoolDown = -2;
+    //     }
+    //   }
+    //   if (bulletCoolDown<bulletCoolDownMax) {
+    //     bulletCoolDown+=0.1;
+    //   }
+    //   if ((mousePressed) && currentFuel > 0) {
+    //     currentFuel-=0.02;
+    //   }
+    //   noStroke();
+    //   fill(0, 50);
+    //   double dRadians = ship.myPointDirection*(Math.PI/180);                 
+    //   int xRotatedTranslated, yRotatedTranslated;    
+    //   beginShape();         
+    //   for (int nI = 0; nI < ship.corners; nI++)    
+    //   {     
+    //     //rotate and translate the coordinates of the floater using current direction 
+    //     xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
+    //     yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
+    //     vertex(xRotatedTranslated, yRotatedTranslated);
+    //   }   
+    //   endShape(CLOSE);
+    // }
   }
 }
 
@@ -547,10 +570,26 @@ class Bullet extends Floater
   public Bullet(SpaceShip x) {
     myCenterX = x.getX();
     myCenterY = x.getY();
-    myPointDirection = x.getPointDirection()+((Math.random()*6)-3);
-    dRadians =myPointDirection*(Math.PI/180);
-    myDirectionX=bulletSpeed*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
-    myDirectionY=bulletSpeed*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
+    
+    if (shootMode == 0) {
+      myPointDirection = x.getPointDirection()+((Math.random()*8)-4);
+      dRadians =myPointDirection*(Math.PI/180);
+      myDirectionX=bulletSpeed*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
+      myDirectionY=bulletSpeed*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
+    }
+    if (shootMode == 1) {
+      myPointDirection = x.getPointDirection()+((Math.random()*16)-8);
+      dRadians =myPointDirection*(Math.PI/180);
+      myDirectionX=bulletSpeed/1.5*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
+      myDirectionY=bulletSpeed/1.5*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
+    }
+    if (shootMode == 2) {
+      myPointDirection = x.getPointDirection()+((Math.random()*4)-2);
+      dRadians =myPointDirection*(Math.PI/180);
+      myDirectionX=bulletSpeed*1.5*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
+      myDirectionY=bulletSpeed*1.5*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
+    }
+        
     myColor = color(255, 255, 0);
   }
   public void show()
@@ -2432,7 +2471,7 @@ class BulletCool extends Gui
     titleY = 390;
   }
   public void interaction() {
-
+    barColor = color(50+(shootCool*10), 50+(shootCool*10), 150+(shootCool*10));
     if (bulletCoolDown>=0) {
       if (spacePressed) {
         textAlign(CENTER, CENTER);
@@ -2458,14 +2497,16 @@ class BulletCool extends Gui
     text("Level: " + currentLevel, height+(width-height)/2, 430);
     text("Enemies: " + robot.size(), height+(width-height)/2, 450);
     text("Friendlies: " + friendly.size(), height+(width-height)/2, 470);
+    String [] shootmode = {"Standard", "Burst", "Sniper"};
+    text("Cannon Mode: " + shootmode[shootMode], height+(width-height)/2, 490);
     if (defend) {
       fill(50, 250, 50);
-      text("Friendlies: Defend", height+(width-height)/2, 490);
+      text("Friendlies: Defend", height+(width-height)/2, 510);
     }
     if (!defend) {
       fill(250, 50, 50);
-      text("Friendlies: Attack", height+(width-height)/2, 490);
-    }
+      text("Friendlies: Attack", height+(width-height)/2, 510);
+    }  
   }
 }
 
@@ -2529,9 +2570,9 @@ class helpButton extends Gui
 {
   color rectColor;
   helpButton() {
-    rectY = 510;
+    rectY = 530;
     titleName = "Help";
-    titleY = 525;
+    titleY = 545;
     rectColor = 150;
   }
   public void show() {
@@ -2570,6 +2611,8 @@ class helpButton extends Gui
       rect(height-280, 200, 40, 40);
       //shoot
       rect(160, 300, 120, 40);
+      //cannon mode
+      rect(200, 400, 40, 40);
       //pause
       rect((height/2)-20, 300, 40, 40);
       //hyperjump
@@ -2584,6 +2627,7 @@ class helpButton extends Gui
       textAlign(CENTER, CENTER);
       text("MOVE", height/2, 140);
       text("SHOOT", 220, 280);
+      text("CANNON MODE", 220, 380);
       text("PAUSE", (height/2), 280);
       text("HYPERJUMP", height-220, 280);
       text("SWITCH MODE", height-220, 380);
@@ -2596,6 +2640,7 @@ class helpButton extends Gui
       text("S", 220, 220);
       text("D", 260, 220);
       text("SPACE", 220, 320);
+      text("F", 220, 420);
       text("P", height/2, 320);
       text("J", height-220, 320);
       text("L", height-220, 420);
@@ -2732,6 +2777,8 @@ class Menu
       rect(width-280, 200, 40, 40);
       //shoot
       rect(160, 300, 120, 40);
+      //cannon mode
+      rect(200, 400, 40, 40);
       //pause
       rect((width/2)-20, 300, 40, 40);
       //hyperjump
@@ -2751,6 +2798,7 @@ class Menu
       textAlign(CENTER, CENTER);
       text("MOVE", width/2, 140);
       text("SHOOT", 220, 280);
+      text("CANNON MODE", 220, 380);
       text("PAUSE", (width/2), 280);
       text("HYPERJUMP", width-220, 280);
       text("SWITCH FRIENDLY MODE", width-220, 380);
@@ -2763,6 +2811,7 @@ class Menu
       text("S", 220, 220);
       text("D", 260, 220);
       text("SPACE", 220, 320);
+      text("F", 220, 420);
       text("P", width/2, 320);
       text("J", width-220, 320);
       text("L", width-220, 420);
@@ -3048,9 +3097,20 @@ public void keyPressed()
       defend = false;
     }
   }
+  if (keyCode == 'F') {
+    if (shootMode < 2 && (int)shootCool == 0) {
+      shootMode += 1;
+      shootCool = shootCoolTime;
+    }
+    if (shootMode == 2 && (int)shootCool == 0) {
+       shootMode = 0;
+       shootCool = shootCoolTime;
+    }
+  }
   if (keyCode == 'T') {
     if (gameStop&&menu.men == 0) {
       crazyMode = true;
+      menu.menuFlash = 0;
     }
   }
 }
