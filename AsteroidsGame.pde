@@ -34,7 +34,7 @@ areaMap map = new areaMap();
 helpButton help = new helpButton();
 Menu menu = new Menu();
 Star[] stars = new Star[screenSize/10];//your variable declarations here
-double gravity = 1.025;
+double gravity = 1.030;
 double maxTorque = 0.2; //0.2
 int rotateSpeed = 1;
 int topSpeed = 10;
@@ -266,7 +266,7 @@ public void draw()
           if (shootMode == 2) {
             robot.get(i).currentHealth-=shootDamage*10;
           }
-          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
+          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY(),robot.get(i).getDirectionX(),robot.get(i).getDirectionY()));
           bullet.remove(x);
           if (robot.get(i).currentHealth <= 0) {
             robot.get(i).shipShot = true;
@@ -277,7 +277,7 @@ public void draw()
       for (int x = 0; x <friendlybullet.size (); x++) {
         if (dist(friendlybullet.get(x).getX(), friendlybullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+friendlybullet.get(x).bulletSize) {
           robot.get(i).currentHealth-=shootDamage;
-          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
+          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY(),robot.get(i).getDirectionX(),robot.get(i).getDirectionY()));
           friendlybullet.remove(x);
           break;
         }
@@ -286,14 +286,14 @@ public void draw()
     for (int x = 0; x < robotbullet.size (); x++) {
       if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
         health.currentHealth-=robotShootDamage;
-        debris.add(new Debris(ship.getX(), ship.getY()));
+        debris.add(new Debris(ship.getX(), ship.getY(),ship.getDirectionX(),ship.getDirectionY()));
         robotbullet.remove(x);
         break;
       }
       for (int y = 0; y < friendly.size (); y++) {
         if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), friendly.get(y).getX(), friendly.get(y).getY()) < 15+robotbullet.get(x).bulletSize) {
           friendly.get(y).currentHealth-=robotShootDamage;
-          debris.add(new Debris(friendly.get(y).getX(), friendly.get(y).getY()));
+          debris.add(new Debris(friendly.get(y).getX(), friendly.get(y).getY(),friendly.get(y).getDirectionX(),friendly.get(y).getDirectionY()));
           robotbullet.remove(x);
           break;
         }
@@ -305,7 +305,7 @@ public void draw()
           robot.get(i).dead = true;
           robot.get(i).myColor = color(200, 0);
           for (int j = 0; j < 10; j++) {
-            debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
+            debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY(),robot.get(i).getDirectionX(),robot.get(i).getDirectionY()));
           }
           break;
         }
@@ -320,7 +320,7 @@ public void draw()
         robot.get(i).move();
         robot.get(i).show();
         robot.get(i).explode();
-        robot.get(i).explodeSize+=2;
+        robot.get(i).explodeSize+=3;
         robot.get(i).explodeOp-=3;
         if (robot.get(i).explodeOp<=0) {
           if (robot.get(i).shipShot == true) {
@@ -338,7 +338,7 @@ public void draw()
           friendly.get(i).dead = true;
           friendly.get(i).myColor = color(200, 0);
           for (int j = 0; j < 10; j++) {
-            debris.add(new Debris(friendly.get(i).getX(), friendly.get(i).getY()));
+            debris.add(new Debris(friendly.get(i).getX(), friendly.get(i).getY(),friendly.get(i).getDirectionX(),friendly.get(i).getDirectionY()));
           }
           break;
         }
@@ -353,7 +353,7 @@ public void draw()
         friendly.get(i).move();
         friendly.get(i).show();
         friendly.get(i).explode();
-        friendly.get(i).explodeSize+=2;
+        friendly.get(i).explodeSize+=3;
         friendly.get(i).explodeOp-=3;
         if (friendly.get(i).explodeOp<=0) {
           friendly.remove(i);
@@ -370,10 +370,9 @@ public void draw()
       rect(-100, -100, screenSize+100, screenSize+100);
     } else if ((int)health.currentHealth <= 0) {
       if (ship.dead == false) {
-
         ship.myColor = color(200, 0);
         for (int j = 0; j < 10; j++) {
-          debris.add(new Debris(ship.getX(), ship.getY()));
+          debris.add(new Debris(ship.getX(), ship.getY(),ship.getDirectionX(),ship.getDirectionY()));
         }
         ship.dead = true;
       }
@@ -456,7 +455,7 @@ class Coins
     myCenterY = x.getY();
     myDirectionX = (Math.random()*0.5)-0.25;
     myDirectionY = (Math.random()*0.5)-0.25;
-    size = 20;
+    size = 10;
     myColor = color(255, 255, 0);
     textUp = 5;
     coinOp = 0;
@@ -468,7 +467,7 @@ class Coins
     ellipse((float)myCenterX, (float)myCenterY, size, size);
     myCenterX+=myDirectionX;
     myCenterY+=myDirectionY;
-    if (dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY()) < size*4) {
+    if (dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY()) < size*10) {
       points+=1;
       currentPoints = points;
       reset = true;
@@ -521,7 +520,7 @@ class Coins
 class Debris extends Floater
 {
   private double speedRotation, debrisOp;
-  Debris(int x, int y) {
+  Debris(int x, int y, double a, double b) {
     corners = 3;
     xCorners = new int[corners];
     yCorners = new int[corners];
@@ -535,8 +534,8 @@ class Debris extends Floater
     myColor = color((int)(Math.random()*100)+100);
     myCenterX = x;
     myCenterY = y;
-    myDirectionX = (Math.random()*8)-4;
-    myDirectionY = (Math.random()*8)-4;
+    myDirectionX = ((Math.random()*8)-4)+a;
+    myDirectionY = ((Math.random()*8)-4)+b;
     myPointDirection = (int)Math.random()*360;
     speedRotation = (Math.random()*1)-.5;
   }
@@ -744,71 +743,6 @@ class SpaceShipControl
       }   
       endShape(CLOSE);
     }
-    // if (mousePressed) {
-    //   noStroke();
-    //   radDir=Math.asin((mouseX-ship.getX())/(dist((float)ship.getX(), (float)ship.getY(), mouseX, mouseY)))-Math.PI/2;
-    //   if (ship.getY()-mouseY<0) {
-    //     radDir*=-1;
-    //   }
-    //   if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90&&dist(mouseX, mouseY, ship.getX(), ship.getY())>50) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-    //     ship.accelerate(maxTorque, 0);
-    //   }
-    //   if (((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))<topSpeed&&(abs((float)(ship.getPointDirection()-(radDir*180/(Math.PI))))<90)==false&&dist(mouseX, mouseY, ship.getX(), ship.getY())<150) && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
-    //     ship.accelerate(-maxTorque, 0);
-    //   }
-    //   if ((ship.getPointDirection()-(radDir*180/(Math.PI))<0) && !jPressed && currentFuel > 0) {
-    //     ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
-    //   }
-    //   if ((ship.getPointDirection()-(radDir*180/(Math.PI))>0) && !jPressed && currentFuel > 0) {
-    //     ship.setPointDirection((int)(ship.getPointDirection()-((ship.getPointDirection()-(radDir*180/(Math.PI))))));
-    //   }
-    //   if (jPressed) {
-    //     ship.myDirectionX = 0;
-    //     ship.myDirectionY = 0;
-    //     double dRadians = (ship.myPointDirection)*(Math.PI/180);
-    //     if (fX > 5 && fX < screenSize-5 && fY > 5 && fY < screenSize-5) {
-    //       fX += ((maxTorque*100) * Math.cos(dRadians));    
-    //       fY += ((maxTorque*100) * Math.sin(dRadians));
-    //     }
-    //     stroke(0, 0, 255);
-    //     line((float)ship.getX(), (float)ship.getY(), (float)fX, (float)fY);
-    //   }
-    //   if (!jPressed) {
-    //     fX = ship.myCenterX;
-    //     fY = ship.myCenterY;
-    //     //fX = iX;
-    //     //fY = iY;
-    //   }
-    //   if (spacePressed && (int)shootCool == 0) {
-    //     if (bulletCoolDown > 0) {
-    //       bulletCoolDown-=0.8;
-    //       bullet.add(new Bullet(ship));
-    //       shootCool = shootCoolTime;
-    //     }
-    //     if (bulletCoolDown<= 0) {
-    //       bulletCoolDown = -2;
-    //     }
-    //   }
-    //   if (bulletCoolDown<bulletCoolDownMax) {
-    //     bulletCoolDown+=0.1;
-    //   }
-    //   if ((mousePressed) && currentFuel > 0) {
-    //     currentFuel-=0.02;
-    //   }
-    //   noStroke();
-    //   fill(0, 50);
-    //   double dRadians = ship.myPointDirection*(Math.PI/180);                 
-    //   int xRotatedTranslated, yRotatedTranslated;    
-    //   beginShape();         
-    //   for (int nI = 0; nI < ship.corners; nI++)    
-    //   {     
-    //     //rotate and translate the coordinates of the floater using current direction 
-    //     xRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.cos(dRadians)) - (ship.yCorners[nI]*2 * Math.sin(dRadians))+ship.myCenterX);     
-    //     yRotatedTranslated = (int)((ship.xCorners[nI]*2 * Math.sin(dRadians)) + (ship.yCorners[nI]*2 * Math.cos(dRadians))+ship.myCenterY);      
-    //     vertex(xRotatedTranslated, yRotatedTranslated);
-    //   }   
-    //   endShape(CLOSE);
-    // }
   }
 }
 
@@ -943,7 +877,7 @@ class SpaceShip extends Floater
     explodeSize = 10;
     explodeOp = 200;
     expR = (int)(Math.random()*50)+200;
-    expG = (int)(Math.random()*50)+150;
+    expG = (int)(Math.random()*100)+100;
     expB = (int)(Math.random()*50)+0;
   }
   public void explode() {
@@ -1317,7 +1251,7 @@ class RobotSpaceShip extends Floater
     explodeSize = 10;
     explodeOp = 200;
     expR = (int)(Math.random()*50)+200;
-    expG = (int)(Math.random()*50)+150;
+    expG = (int)(Math.random()*100)+100;
     expB = (int)(Math.random()*50)+0;
     missed = 0;
   }
@@ -1404,7 +1338,7 @@ class RobotSpaceShip extends Floater
   }
   public void reFuel() {
     noStroke();
-    if (target>=friendly.size()+1) {
+    if (target>=friendly.size()) {
       target = (int)(Math.random()*friendly.size());
     }
     int z = target;
@@ -1922,7 +1856,7 @@ class FriendlySpaceShip extends Floater
     explodeSize = 10;
     explodeOp = 200;
     expR = (int)(Math.random()*50)+200;
-    expG = (int)(Math.random()*50)+150;
+    expG = (int)(Math.random()*100)+100;
     expB = (int)(Math.random()*50)+0;
     missed = 0;
   }
