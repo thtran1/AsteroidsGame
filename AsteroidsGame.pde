@@ -12,6 +12,8 @@ SpaceShipControl control = new SpaceShipControl();
 //RobotSpaceShip robot = new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize);
 ArrayList <RobotSpaceShip> robot = new ArrayList <RobotSpaceShip>();
 ArrayList <FriendlySpaceShip> friendly = new ArrayList <FriendlySpaceShip>();
+ArrayList <Coins> coins = new ArrayList <Coins>();
+ArrayList <Debris> debris = new ArrayList <Debris>();
 SpaceStation spacestation = new SpaceStation(screenSize/2, screenSize/2);
 //Asteroid[] asteroid = new Asteroid[50];
 ArrayList <Bullet> bullet = new ArrayList <Bullet>();
@@ -46,6 +48,7 @@ int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
 double shootDamage = 5; //5
 double robotShootDamage = 3+(currentLevel/5); //3
+int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
 int intRobots = 5;
 int intFriendlys = 4;
@@ -108,248 +111,292 @@ public void draw()
   if (gameStop) {
     menu.mainmenu();
   } else if (!gameStop) {
-    if ((int)health.currentHealth > 0) {
-      fill(0);
-      rect(-100, -100, screenSize+100, screenSize+100);
-      for (int i = 0; i < stars.length; i++) {
-        stars[i].show();
+    fill(0);
+    rect(-100, -100, screenSize+100, screenSize+100);
+    for (int i = 0; i < stars.length; i++) {
+      stars[i].show();
+    }
+    if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<50*spacestation.stationSize)
+    {
+      if (health.currentHealth < health.maxHealth) {
+        health.currentHealth += 0.001*health.maxHealth;
+        health.barColor = color(255, 150, 150);
       }
-      if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())<50*spacestation.stationSize)
+      if (addHealth<50) {
+        addHealth+=1;
+      }
+    }
+    for (int i = 0; i<robot.size (); i++) {
+      if (dist(spacestation.getX(), spacestation.getY(), robot.get(i).getX(), robot.get(i).getY())<50*spacestation.stationSize)
       {
-        if (health.currentHealth < health.maxHealth) {
-          health.currentHealth += 0.001*health.maxHealth;
-          health.barColor = color(255, 150, 150);
+        if (robot.get(i).currentHealth < robot.get(i).maxHealth && robot.get(i).currentHealth>0) {
+          robot.get(i).currentHealth += 0.001*robot.get(i).maxHealth;
         }
         if (addHealth<50) {
           addHealth+=1;
         }
       }
-      for (int i = 0; i<robot.size (); i++) {
-        if (dist(spacestation.getX(), spacestation.getY(), robot.get(i).getX(), robot.get(i).getY())<50*spacestation.stationSize)
-        {
-          if (robot.get(i).currentHealth < robot.get(i).maxHealth && robot.get(i).currentHealth>0) {
-            robot.get(i).currentHealth += 0.001*robot.get(i).maxHealth;
-          }
-          if (addHealth<50) {
-            addHealth+=1;
-          }
+    }
+    for (int i = 0; i<friendly.size (); i++) {
+      if (dist(spacestation.getX(), spacestation.getY(), friendly.get(i).getX(), friendly.get(i).getY())<50*spacestation.stationSize)
+      {
+        if (friendly.get(i).currentHealth < friendly.get(i).maxHealth && friendly.get(i).currentHealth>0) {
+          friendly.get(i).currentHealth += 0.001*friendly.get(i).maxHealth;
+        }
+        if (addHealth<50) {
+          addHealth+=1;
         }
       }
-      for (int i = 0; i<friendly.size (); i++) {
-        if (dist(spacestation.getX(), spacestation.getY(), friendly.get(i).getX(), friendly.get(i).getY())<50*spacestation.stationSize)
-        {
-          if (friendly.get(i).currentHealth < friendly.get(i).maxHealth && friendly.get(i).currentHealth>0) {
-            friendly.get(i).currentHealth += 0.001*friendly.get(i).maxHealth;
-          }
-          if (addHealth<50) {
-            addHealth+=1;
-          }
-        }
+    }
+    if (addHealth>0) {
+      addHealth-=0.5;
+    }
+    if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())>25*spacestation.stationSize) {
+      fuel.barColor = color(100);
+      health.barColor = color(255, 0, 0);
+    }
+    if ((int)shootCool>0) {
+      shootCool-=1;
+    }
+    for (int i = 0; i <robot.size (); i++) {
+      if ((int)robot.get(i).robotShootCool>0) {
+        robot.get(i).robotShootCool-=1;
       }
-      if (addHealth>0) {
-        addHealth-=0.5;
+    }
+    for (int i = 0; i <friendly.size (); i++) {
+      if ((int)friendly.get(i).friendlyShootCool>0) {
+        friendly.get(i).friendlyShootCool-=1;
       }
-      if (dist(spacestation.getX(), spacestation.getY(), ship.getX(), ship.getY())>25*spacestation.stationSize) {
-        fuel.barColor = color(100);
-        health.barColor = color(255, 0, 0);
-      }
-      if ((int)shootCool>0) {
-        shootCool-=1;
-      }
-      for (int i = 0; i <robot.size (); i++) {
-        if ((int)robot.get(i).robotShootCool>0) {
-          robot.get(i).robotShootCool-=1;
-        }
-      }
-      for (int i = 0; i <friendly.size (); i++) {
-        if ((int)friendly.get(i).friendlyShootCool>0) {
-          friendly.get(i).friendlyShootCool-=1;
-        }
-      }
-      //if (areaX != areaSize/2 || areaY != areaSize/2) {
-      for (int i = 0; i < asteroid.size (); i++) {
-        asteroid.get(i).show();
-        asteroid.get(i).move();
-      }
+    }
+    //if (areaX != areaSize/2 || areaY != areaSize/2) {
+    for (int i = 0; i < asteroid.size (); i++) {
+      asteroid.get(i).show();
+      asteroid.get(i).move();
+    }
 
-      if (dist(fuelcan.getX(), fuelcan.getY(), ship.getX(), ship.getY())<40) {
-        fuelcan.isTouched = true;
-        if (currentFuel<fuel.maxFuel) {
-          if (currentFuel<fuel.maxFuel-(fuel.maxFuel/4)) {
-            currentFuel+=fuel.maxFuel/4;
-            addFuel = 50;
-          }
-          if (currentFuel>fuel.maxFuel-(fuel.maxFuel/4)) {
-            currentFuel=fuel.maxFuel;
-            addFuel = 50;
-          }
+    if (dist(fuelcan.getX(), fuelcan.getY(), ship.getX(), ship.getY())<40) {
+      fuelcan.isTouched = true;
+      if (currentFuel<fuel.maxFuel) {
+        if (currentFuel<fuel.maxFuel-(fuel.maxFuel/4)) {
+          currentFuel+=fuel.maxFuel/4;
+          addFuel = 50;
+        }
+        if (currentFuel>fuel.maxFuel-(fuel.maxFuel/4)) {
+          currentFuel=fuel.maxFuel;
+          addFuel = 50;
         }
       }
-      if (fuelcan.isTouched == false) {
-        fuelcan.show();
-        fuelcan.move();
-      }
-      //}
-      if (areaX == areaSize/2 && areaY == areaSize/2) {
-        spacestation.show();
-      }
-      fill(0, (abs(areaX-(areaSize/2))+abs(areaY-(areaSize/2)))*10);
-      rect(-100, -100, screenSize+100, screenSize+100);
-      for (int i = 0; i<bullet.size (); i++) {
-        bullet.get(i).move();
-        bullet.get(i).show();
-        if (abs(bullet.get(i).getX()-height/2)>=height*3||abs(bullet.get(i).getY()-height/2)>=height*3) {
-          bullet.remove(i);
+    }
+    if (fuelcan.isTouched == false) {
+      fuelcan.show();
+      fuelcan.move();
+    }
+    //}
+    if (areaX == areaSize/2 && areaY == areaSize/2) {
+      spacestation.show();
+    }
+    fill(0, (abs(areaX-(areaSize/2))+abs(areaY-(areaSize/2)))*10);
+    rect(-100, -100, screenSize+100, screenSize+100);
+    for (int i = 0; i < coins.size(); i++) {
+      if (coins.get(i).reset == false) {
+        coins.get(i).show();
+        coins.get(i).coinOp+=1;
+        if (coins.get(i).coinOp>=800) {
+          coins.remove(i);
         }
       }
-      for (int i = 0; i<robotbullet.size (); i++) {
-        robotbullet.get(i).move();
-        robotbullet.get(i).show();
-        if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
-          robotbullet.remove(i);
+      if (coins.get(i).reset == true) {
+        fill(coins.get(i).myColor, 200-(float)coins.get(i).textUp);
+        textAlign(CENTER, CENTER);
+        textSize(20);
+        text((int)coins.get(i).currentPoints, (float)coins.get(i).getX(), (float)(coins.get(i).getY()-coins.get(i).textUp));
+        coins.get(i).textUp+=1;
+        if (coins.get(i).textUp == 100) {
+          coins.remove(i);
         }
       }
-      for (int i = 0; i<friendlybullet.size (); i++) {
-        friendlybullet.get(i).move();
-        friendlybullet.get(i).show();
-        if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
-          friendlybullet.remove(i);
-        }
+    }
+    for (int i = 0; i < debris.size(); i++) {
+      if (debris.get(i).debrisOp>0) {
+        debris.get(i).move();
+        debris.get(i).show();
+        debris.get(i).debrisOp-=1;
       }
-      for (int i = 0; i < robot.size (); i++) {
-        for (int x = 0; x <bullet.size (); x++) {
-          if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 25+bullet.get(x).bulletSize) {
-            if (shootMode == 0) {
-              robot.get(i).currentHealth-=shootDamage;
-            }
-            if (shootMode == 1) {
-              robot.get(i).currentHealth-=shootDamage/3;
-            }
-            if (shootMode == 2) {
-              robot.get(i).currentHealth-=shootDamage*10;
-            }
-            bullet.remove(x);
-            break;
-          }
-        }
-        for (int x = 0; x <friendlybullet.size (); x++) {
-          if (dist(friendlybullet.get(x).getX(), friendlybullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+friendlybullet.get(x).bulletSize) {
+      if (debris.get(i).debrisOp<=0) {
+        debris.remove(i);
+      }
+    }
+    for (int i = 0; i<bullet.size (); i++) {
+      bullet.get(i).move();
+      bullet.get(i).show();
+      if (abs(bullet.get(i).getX()-height/2)>=height*3||abs(bullet.get(i).getY()-height/2)>=height*3) {
+        bullet.remove(i);
+      }
+    }
+    for (int i = 0; i<robotbullet.size(); i++) {
+      robotbullet.get(i).move();
+      robotbullet.get(i).show();
+      if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
+        robot.get((int)Math.random()*robot.size()).missed+=1;
+        robotbullet.remove(i);
+      }
+    }
+    for (int i = 0; i<friendlybullet.size (); i++) {
+      friendlybullet.get(i).move();
+      friendlybullet.get(i).show();
+      if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
+        friendly.get((int)Math.random()*friendly.size()).missed+=1;
+        friendlybullet.remove(i);
+      }
+    }
+    for (int i = 0; i < robot.size (); i++) {
+      for (int x = 0; x <bullet.size (); x++) {
+        if (dist(bullet.get(x).getX(), bullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 25+bullet.get(x).bulletSize) {
+          if (shootMode == 0) {
             robot.get(i).currentHealth-=shootDamage;
-            friendlybullet.remove(x);
-            break;
           }
+          if (shootMode == 1) {
+            robot.get(i).currentHealth-=shootDamage/2;
+          }
+          if (shootMode == 2) {
+            robot.get(i).currentHealth-=shootDamage*10;
+          }
+          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
+          bullet.remove(x);
+          if (robot.get(i).currentHealth <= 0) {
+            robot.get(i).shipShot = true;
+          }
+          break;
         }
       }
-      for (int x = 0; x < robotbullet.size (); x++) {
-        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
-          health.currentHealth-=robotShootDamage;
+      for (int x = 0; x <friendlybullet.size (); x++) {
+        if (dist(friendlybullet.get(x).getX(), friendlybullet.get(x).getY(), robot.get(i).getX(), robot.get(i).getY()) < 15+friendlybullet.get(x).bulletSize) {
+          robot.get(i).currentHealth-=shootDamage;
+          debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
+          friendlybullet.remove(x);
+          break;
+        }
+      }
+    }
+    for (int x = 0; x < robotbullet.size (); x++) {
+      if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), ship.getX(), ship.getY()) < 15+robotbullet.get(x).bulletSize) {
+        health.currentHealth-=robotShootDamage;
+        debris.add(new Debris(ship.getX(), ship.getY()));
+        robotbullet.remove(x);
+        break;
+      }
+      for (int y = 0; y < friendly.size (); y++) {
+        if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), friendly.get(y).getX(), friendly.get(y).getY()) < 15+robotbullet.get(x).bulletSize) {
+          friendly.get(y).currentHealth-=robotShootDamage;
+          debris.add(new Debris(friendly.get(y).getX(), friendly.get(y).getY()));
           robotbullet.remove(x);
           break;
         }
-        for (int y = 0; y < friendly.size (); y++) {
-          if (dist(robotbullet.get(x).getX(), robotbullet.get(x).getY(), friendly.get(y).getX(), friendly.get(y).getY()) < 15+robotbullet.get(x).bulletSize) {
-            friendly.get(y).currentHealth-=robotShootDamage;
-            robotbullet.remove(x);
-            break;
+      }
+    }
+    for (int i = 0; i < robot.size (); i++) {
+      if (robot.get(i).dead == false) {
+        if (robot.get(i).currentHealth<=0) {
+          robot.get(i).dead = true;
+          robot.get(i).myColor = color(200, 0);
+          for (int j = 0; j < 10; j++) {
+            debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
           }
+        }
+        robot.get(i).reFuel();
+        robot.get(i).control();
+        robot.get(i).move();
+        robot.get(i).show();
+        rAX.set(i, robot.get(i).getAreaX());
+        rAY.set(i, robot.get(i).getAreaY());
+      }
+      if (robot.get(i).dead == true) {
+        robot.get(i).move();
+        robot.get(i).show();
+        robot.get(i).explode();
+        robot.get(i).explodeSize+=2;
+        robot.get(i).explodeOp-=3;
+        if (robot.get(i).explodeOp<=0) {
+          if (robot.get(i).shipShot == true) {
+            coins.add(new Coins(robot.get(i)));
+          }
+          robot.remove(i);
+          rAX.remove(i);
+          rAY.remove(i);
         }
       }
-      control.control(); //spaceship controls
-      for (int i = 0; i < robot.size (); i++) {
-        if (robot.get(i).dead == false) {
-          if (robot.get(i).currentHealth<=0) {
-            robot.get(i).dead = true;
-            robot.get(i).myColor = 200;
-          }
-          robot.get(i).reFuel();
-          robot.get(i).control();
-          robot.get(i).move();
-          robot.get(i).show();
-          rAX.set(i, robot.get(i).getAreaX());
-          rAY.set(i, robot.get(i).getAreaY());
-        }
-        if (robot.get(i).dead == true) {
-          robot.get(i).move();
-          robot.get(i).show();
-          robot.get(i).myColor-=1;
-          if (robot.get(i).myColor<50) {
-            robot.remove(i);
-            rAX.remove(i);
-            rAY.remove(i);
+    }
+    for (int i = 0; i < friendly.size (); i++) {
+      if (friendly.get(i).dead == false) {
+        if (friendly.get(i).currentHealth<=0) {
+          friendly.get(i).dead = true;
+          friendly.get(i).myColor = color(200, 0);
+          for (int j = 0; j < 10; j++) {
+            debris.add(new Debris(friendly.get(i).getX(), friendly.get(i).getY()));
           }
         }
+        friendly.get(i).reFuel();
+        friendly.get(i).control();
+        friendly.get(i).move();
+        friendly.get(i).show();
+        fAX.set(i, friendly.get(i).getAreaX());
+        fAY.set(i, friendly.get(i).getAreaY());
       }
-      for (int i = 0; i < friendly.size (); i++) {
-        if (friendly.get(i).dead == false) {
-          if (friendly.get(i).currentHealth<=0) {
-            friendly.get(i).dead = true;
-            friendly.get(i).myColor = 200;
-          }
-          friendly.get(i).reFuel();
-          friendly.get(i).control();
-          friendly.get(i).move();
-          friendly.get(i).show();
-          fAX.set(i, friendly.get(i).getAreaX());
-          fAY.set(i, friendly.get(i).getAreaY());
-        }
-        if (friendly.get(i).dead == true) {
-          friendly.get(i).move();
-          friendly.get(i).show();
-          friendly.get(i).myColor-=1;
-          if (friendly.get(i).myColor<50) {
-            friendly.remove(i);
-            fAX.remove(i);
-            fAY.remove(i);
-          }
-        }
-      }
-      if (robot.size() == 0) {
-        for (int i = 0; i<friendly.size (); i++) {
+      if (friendly.get(i).dead == true) {
+        friendly.get(i).move();
+        friendly.get(i).show();
+        friendly.get(i).explode();
+        friendly.get(i).explodeSize+=2;
+        friendly.get(i).explodeOp-=3;
+        if (friendly.get(i).explodeOp<=0) {
           friendly.remove(i);
           fAX.remove(i);
           fAY.remove(i);
         }
-        noStroke();
-        fill(0);
-        rect(0, 0, width, height);
-        points+=10;
-        currentLevel+=1;
-        if (currentLevel>highestLevel) {
-          highestLevel=currentLevel;
-        }
-        gameStop = true;
-        menu.men = 3;
       }
+    }
+    if ((int)health.currentHealth > 0) {
+      control.control();
       ship.show();
       ship.move();
-
-      ///////////////////////////////////////
-      fill(50);
-      noStroke();
-      rect(screenSize, 0, width-height, screenSize);//sidebar
-      hyperjump.show();
-      hyperjump.interaction();
-      speed.show();
-      speed.interaction();
-      health.show();
-      health.interaction();
-      fuel.show();
-      fuel.interaction();
-      bulletcool.show();
-      bulletcool.interaction();
-      map.show();
-      help.show();
-      help.interaction();
       fill(255, 0, 0, ((health.maxHealth-health.currentHealth)-(health.maxHealth/2))*2);
-      //fill(255,0,0,-200);
       rect(-100, -100, screenSize+100, screenSize+100);
-      fill(255);
     } else if ((int)health.currentHealth <= 0) {
-      for (int i = 0; i<robot.size (); i++) {
-        robot.remove(i);
-        rAX.remove(i);
-        rAY.remove(i);
+      if (ship.dead == false) {
+
+        ship.myColor = color(200, 0);
+        for (int j = 0; j < 10; j++) {
+          debris.add(new Debris(ship.getX(), ship.getY()));
+        }
+        ship.dead = true;
       }
+      if (ship.dead == true) {
+        health.currentHealth = 0;
+        ship.move();
+        ship.show();
+        ship.explode();
+        ship.explodeSize+=2;
+        ship.explodeOp-=2;
+        if (ship.explodeOp<=0) {
+          for (int i = 0; i<robot.size (); i++) {
+            robot.remove(i);
+            rAX.remove(i);
+            rAY.remove(i);
+          }
+          for (int i = 0; i<friendly.size (); i++) {
+            friendly.remove(i);
+            fAX.remove(i);
+            fAY.remove(i);
+          }
+          noStroke();
+          fill(0);
+          rect(0, 0, width, height);
+          gameStop = true;
+          menu.men = 2;
+        }
+      }
+    }
+    if (robot.size() == 0 && coins.size() == 0) {
       for (int i = 0; i<friendly.size (); i++) {
         friendly.remove(i);
         fAX.remove(i);
@@ -358,9 +405,201 @@ public void draw()
       noStroke();
       fill(0);
       rect(0, 0, width, height);
+      points+=10;
+      currentLevel+=1;
+      if (currentLevel>highestLevel) {
+        highestLevel=currentLevel;
+      }
       gameStop = true;
-      menu.men = 2;
+      menu.men = 3;
     }
+    ///////////////////////////////////////
+    fill(50);
+    noStroke();
+    rect(screenSize, 0, width-height, screenSize);//sidebar
+    hyperjump.show();
+    hyperjump.interaction();
+    speed.show();
+    speed.interaction();
+    health.show();
+    health.interaction();
+    fuel.show();
+    fuel.interaction();
+    bulletcool.show();
+    bulletcool.interaction();
+    map.show();
+    help.show();
+    help.interaction();
+    //fill(255,0,0,-200);
+  }
+}
+
+class Coins
+{
+  protected double myCenterX, myCenterY; //holds center coordinates   
+  protected double myDirectionX, myDirectionY;
+  protected int size;
+  protected color myColor;
+  protected boolean reset = false;
+  protected double textUp;
+  protected double coinOp;
+  protected double currentPoints;
+  Coins(RobotSpaceShip x) {
+    myCenterX = x.getX();
+    myCenterY = x.getY();
+    myDirectionX = (Math.random()*0.5)-0.25;
+    myDirectionY = (Math.random()*0.5)-0.25;
+    size = 20;
+    myColor = color(255, 255, 0);
+    textUp = 5;
+    coinOp = 0;
+  }
+  public void show() {
+    fill(0, 50);
+    //ellipse((float)myCenterX, (float)myCenterY, size*1.5, size*1.5);
+    fill(myColor, 800-(float)coinOp);
+    ellipse((float)myCenterX, (float)myCenterY, size, size);
+    myCenterX+=myDirectionX;
+    myCenterY+=myDirectionY;
+    if (dist((float)myCenterX, (float)myCenterY, ship.getX(), ship.getY()) < size*4) {
+      points+=1;
+      currentPoints = points;
+      reset = true;
+    }
+    if (myCenterX >height+screenSize)
+    {   
+      reset = true;
+      myCenterX = -screenSize;
+    } else if (myCenterX<-screenSize)
+    {   
+      reset = true;
+      myCenterX = height+screenSize;
+    }    
+    if (myCenterY >height+screenSize)
+    {    
+      reset = true;
+      myCenterY = -screenSize;
+    } else if (myCenterY < -screenSize)
+    {   
+      reset = true;
+      myCenterY = height+screenSize;
+    }
+  }
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  }
+}
+
+class Debris extends Floater
+{
+  private double speedRotation, debrisOp;
+  Debris(int x, int y) {
+    corners = 3;
+    xCorners = new int[corners];
+    yCorners = new int[corners];
+    xCorners[0] = 0;
+    yCorners[0] = 3;
+    xCorners[1] = 6;
+    yCorners[1] = -3;
+    xCorners[2] = -6;
+    yCorners[2] = -3;
+    debrisOp = 200;
+    myColor = color((int)(Math.random()*100)+100);
+    myCenterX = x;
+    myCenterY = y;
+    myDirectionX = (Math.random()*8)-4;
+    myDirectionY = (Math.random()*8)-4;
+    myPointDirection = (int)Math.random()*360;
+    speedRotation = (Math.random()*1)-.5;
+  }
+  public void show ()  //Draws the floater at the current position  
+  {             
+    fill(myColor, (float)debrisOp);   
+    stroke(myColor, (float)debrisOp);    
+    //convert degrees to radians for sin and cos         
+    double dRadians = myPointDirection*(Math.PI/180);                 
+    int xRotatedTranslated, yRotatedTranslated;    
+    beginShape();         
+    for (int nI = 0; nI < corners; nI++)    
+    {     
+      //rotate and translate the coordinates of the floater using current direction 
+      xRotatedTranslated = (int)((xCorners[nI] * Math.cos(dRadians)) - (yCorners[nI] * Math.sin(dRadians))+myCenterX);     
+      yRotatedTranslated = (int)((xCorners[nI] * Math.sin(dRadians)) + (yCorners[nI] * Math.cos(dRadians))+myCenterY);      
+      vertex(xRotatedTranslated, yRotatedTranslated);
+    }   
+    endShape(CLOSE);
+  }
+  public void move() {
+    myCenterX+=myDirectionX;
+    myCenterY+=myDirectionY;
+    myDirectionX=myDirectionX/gravity;
+    myDirectionY=myDirectionY/gravity;
+    myPointDirection +=speedRotation;
+    if (myCenterX >height+screenSize)
+    {   
+      myCenterX = -screenSize;
+    } else if (myCenterX<-screenSize)
+    {   
+      myCenterX = height+screenSize;
+    }    
+    if (myCenterY >height+screenSize)
+    {    
+      myCenterY = -screenSize;
+    } else if (myCenterY < -screenSize)
+    {   
+      myCenterY = height+screenSize;
+    }
+  }
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+  public void setDirectionX(double x) {
+    myDirectionX = x;
+  }  
+  public double getDirectionX() {
+    return myDirectionX;
+  }
+  public void setDirectionY(double y) {
+    myDirectionY = y;
+  }  
+  public double getDirectionY() {
+    return myDirectionY;
+  } 
+  public void setPointDirection(int degrees) {
+    myPointDirection = degrees;
+  }  
+  public double getPointDirection() {
+    return myPointDirection;
   }
 }
 
@@ -460,10 +699,11 @@ class SpaceShipControl
             shootCool = shootCoolTime;
           }
           if (shootMode == 1) {
-            bulletCoolDown-=0.8;
+            bulletCoolDown-=0.7;
             bullet.add(new Bullet(ship));
             bullet.add(new Bullet(ship));
             bullet.add(new Bullet(ship));
+            shootCool = shootCoolTime;
           }
           if (shootMode == 2) {
             bulletCoolDown-=3;
@@ -570,7 +810,7 @@ class Bullet extends Floater
   public Bullet(SpaceShip x) {
     myCenterX = x.getX();
     myCenterY = x.getY();
-    
+
     if (shootMode == 0) {
       myPointDirection = x.getPointDirection()+((Math.random()*8)-4);
       dRadians =myPointDirection*(Math.PI/180);
@@ -589,7 +829,7 @@ class Bullet extends Floater
       myDirectionX=bulletSpeed*1.5*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
       myDirectionY=bulletSpeed*1.5*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
     }
-        
+
     myColor = color(255, 255, 0);
   }
   public void show()
@@ -645,6 +885,9 @@ class SpaceShip extends Floater
   protected double intX = screenSize;
   protected double intY = screenSize;
   protected int spaceShipSize = 1;
+  protected boolean dead = false;
+  protected double explodeSize, explodeOp;
+  protected int expR, expG, expB;
   SpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -688,6 +931,16 @@ class SpaceShip extends Floater
     myDirectionY = 0;
     myPointDirection = 270;
     nDegreesOfRotation = 0;
+    explodeSize = 10;
+    explodeOp = 200;
+    expR = (int)(Math.random()*50)+200;
+    expG = (int)(Math.random()*50)+150;
+    expB = (int)(Math.random()*50)+0;
+  }
+  public void explode() {
+    noStroke();
+    fill(expR, expG, expB, (float)explodeOp);
+    ellipse((float)myCenterX, (float)myCenterY, (float)explodeSize, (float)explodeSize);
   }
   public void accelerate (double dAmount, double pAdd)   
   {          
@@ -720,6 +973,12 @@ class SpaceShip extends Floater
       myCenterX = 0;
       fuelcan.isTouched = false;
       fuelcan.setX(fuelcan.getX()-screenSize);
+      for (int i = 0; i<coins.size(); i++) {
+        coins.get(i).setX(coins.get(i).getX()-screenSize);
+      }
+      for (int i = 0; i<debris.size(); i++) {
+        debris.get(i).setX(debris.get(i).getX()-screenSize);
+      }
       for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()-(screenSize));
@@ -750,6 +1009,12 @@ class SpaceShip extends Floater
       myCenterX = screenSize;
       fuelcan.isTouched = false;
       fuelcan.setX(fuelcan.getX()+screenSize);
+      for (int i = 0; i<coins.size(); i++) {
+        coins.get(i).setX(coins.get(i).getX()+screenSize);
+      }
+      for (int i = 0; i<debris.size(); i++) {
+        debris.get(i).setX(debris.get(i).getX()+screenSize);
+      }
       for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setX(robot.get(i).getX()+(screenSize));
@@ -781,6 +1046,12 @@ class SpaceShip extends Floater
       myCenterY = 0;
       fuelcan.isTouched = false;
       fuelcan.setY(fuelcan.getY()-screenSize);
+      for (int i = 0; i<coins.size(); i++) {
+        coins.get(i).setY(coins.get(i).getY()-screenSize);
+      }
+      for (int i = 0; i<debris.size(); i++) {
+        debris.get(i).setY(debris.get(i).getY()-screenSize);
+      }
       for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()-(screenSize));
@@ -811,6 +1082,12 @@ class SpaceShip extends Floater
       myCenterY = screenSize;
       fuelcan.isTouched = false;
       fuelcan.setY(fuelcan.getY()+screenSize);
+      for (int i = 0; i<coins.size(); i++) {
+        coins.get(i).setY(coins.get(i).getY()+screenSize);
+      }
+      for (int i = 0; i<debris.size(); i++) {
+        debris.get(i).setY(debris.get(i).getY()+screenSize);
+      }
       for (int i = 0; i<robot.size (); i++) {
         robot.get(i).reset();
         robot.get(i).setY(robot.get(i).getY()+(screenSize));
@@ -975,6 +1252,10 @@ class RobotSpaceShip extends Floater
   protected int robotShootCool = 0;
   protected int robotShootCoolTime = 25;
   protected int target;
+  protected boolean shipShot = false;
+  protected double explodeSize, explodeOp;
+  protected int expR, expG, expB;
+  protected double missed;
   RobotSpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -1024,7 +1305,17 @@ class RobotSpaceShip extends Floater
     //strOffset = (int)(sp/(Math.random()*10)+1);
     rotOffset = (int)(((Math.random()*300)+300)/sp);
     strOffset = (int)(((Math.random()*300)+300)/sp);
-    //strOffset = 0;
+    explodeSize = 10;
+    explodeOp = 200;
+    expR = (int)(Math.random()*50)+200;
+    expG = (int)(Math.random()*50)+150;
+    expB = (int)(Math.random()*50)+0;
+    missed = 0;
+  }
+  public void explode() {
+    noStroke();
+    fill(expR, expG, expB, (float)explodeOp);
+    ellipse((float)myCenterX, (float)myCenterY, (float)explodeSize, (float)explodeSize);
   }
   public void reset() {
     //currentHealth = maxHealth;
@@ -1305,6 +1596,13 @@ class RobotSpaceShip extends Floater
   }
 
   public void control() {
+    if (missed > 0) {
+      if (missed > maxMissed) {
+        target = (int)(Math.random()*friendly.size());
+        missed = 0;
+      }
+      missed-=0.01;
+    }
     if (!needHealth) {
       if (target>=friendly.size()+1) {
         target = (int)(Math.random()*friendly.size()+1);
@@ -1558,6 +1856,9 @@ class FriendlySpaceShip extends Floater
   protected int friendlyShootCool = 0;
   protected int friendlyShootCoolTime = 25;
   protected int target;
+  protected double explodeSize, explodeOp;
+  protected int expR, expG, expB;
+  protected double missed;
   FriendlySpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -1607,7 +1908,17 @@ class FriendlySpaceShip extends Floater
     //strOffset = (int)(sp/(Math.random()*10)+1);
     rotOffset = (int)(((Math.random()*300)+300)/sp);
     strOffset = (int)(((Math.random()*300)+300)/sp);
-    //strOffset = 0;
+    explodeSize = 10;
+    explodeOp = 200;
+    expR = (int)(Math.random()*50)+200;
+    expG = (int)(Math.random()*50)+150;
+    expB = (int)(Math.random()*50)+0;
+    missed = 0;
+  }
+  public void explode() {
+    noStroke();
+    fill(expR, expG, expB, (float)explodeOp);
+    ellipse((float)myCenterX, (float)myCenterY, (float)explodeSize, (float)explodeSize);
   }
   public void reset() {
     //currentHealth = maxHealth;
@@ -1769,6 +2080,13 @@ class FriendlySpaceShip extends Floater
   }
 
   public void control() {
+    if (missed > 0) {
+      if (missed > maxMissed) {
+        target = (int)(Math.random()*robot.size());
+        missed = 0;
+      }
+      missed-=0.01;
+    }
     if (!needHealth&&robot.size()>0) {
       if (target>=robot.size()) {
         target = (int)(Math.random()*robot.size());
@@ -2506,7 +2824,7 @@ class BulletCool extends Gui
     if (!defend) {
       fill(250, 50, 50);
       text("Friendlies: Attack", height+(width-height)/2, 510);
-    }  
+    }
   }
 }
 
@@ -2728,21 +3046,34 @@ class Menu
         text("intFriendlys: " + intFriendlys, 100, 350);
         text("+", 170, 350);
         text("-", 200, 350);
+        text("Health: " + health.maxHealth, 100, 400);
+        text("+", 170, 400);
+        text("-", 200, 400);
         if (menuFlash<=0&&(mousePressed&&mouseX>160&&mouseX<180&&mouseY>290&&mouseY<310)) {
           intRobots+=1;
-          menuFlash=5;
+          menuFlash=3;
         }
         if (menuFlash<=0&&(mousePressed&&mouseX>190&&mouseX<210&&mouseY>290&&mouseY<310&&intRobots>0)) {
           intRobots-=1;
-          menuFlash=5;
+          menuFlash=3;
         }
         if (menuFlash<=0&&(mousePressed&&mouseX>160&&mouseX<180&&mouseY>340&&mouseY<360)) {
           intFriendlys+=1;
-          menuFlash=5;
+          menuFlash=3;
         }
         if (menuFlash<=0&&(mousePressed&&mouseX>190&&mouseX<210&&mouseY>340&&mouseY<360&&intFriendlys>0)) {
           intFriendlys-=1;
-          menuFlash=5;
+          menuFlash=3;
+        }
+        if (menuFlash<=0&&(mousePressed&&mouseX>160&&mouseX<180&&mouseY>390&&mouseY<410)) {
+          health.maxHealth+=50;
+          health.currentHealth = health.maxHealth;
+          menuFlash=3;
+        }
+        if (menuFlash<=0&&(mousePressed&&mouseX>190&&mouseX<210&&mouseY>390&&mouseY<410&&health.maxHealth>0)) {
+          health.maxHealth-=50;
+          health.currentHealth = health.maxHealth;
+          menuFlash=3;
         }
       }
       if (menuFlash<=50&&(spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50))) {
@@ -2856,15 +3187,6 @@ class Menu
           fAX.add(i, (float)((areaX)+(friendly.get(i).getX()-(screenSize/2))/screenSize));
           fAY.add(i, (float)((areaY)+(friendly.get(i).getY()-(screenSize/2))/screenSize));
         }
-        bulletCoolDownMax = 10;
-        bulletCoolDown = 10;
-        fuel.maxFuel = 100;
-        health.maxHealth = 100;
-        shootDamage = 5;
-        currentLevel = 1;
-        robotShootDamage = 5+(currentLevel/5);
-        health.currentHealth = health.maxHealth;
-        currentFuel = fuel.maxFuel;
         for (int i = 0; i<robot.size (); i++) {
           robot.get(i).maxHealth = 50;
           robot.get(i).currentHealth = robot.get(i).maxHealth;
@@ -2930,6 +3252,15 @@ class Menu
       if (spacePressed||(mousePressed&&mouseX>(width/2)-100&&mouseX<(width/2)-100+200&&mouseY>height-200&&mouseY<height-200+50)) {
         menuFlash=100;
         men = 0;
+        bulletCoolDownMax = 10;
+        bulletCoolDown = 10;
+        fuel.maxFuel = 100;
+        health.maxHealth = 100;
+        shootDamage = 5;
+        currentLevel = 1;
+        robotShootDamage = 5+(currentLevel/5);
+        health.currentHealth = health.maxHealth;
+        currentFuel = fuel.maxFuel;
       }
     }
     if (men == 3) {
@@ -2968,7 +3299,7 @@ class Menu
       text("FUEL+20 (3PT)\nFUEL: "+fuel.maxFuel, (width/2)-300, height-280);
       text("HEALTH+20 (7PT)\nHEALTH: "+(int)health.maxHealth, (width/2), height-280);
       text("DAMAGE+1 (7PT)\nDAMAGE: "+shootDamage, (width/2)+300, height-280);
-      text("FRIENDLY SHIP+1 (17PT)\nCAPACITY: "+(int)intFriendlysAlive, (width/2)-300, height-340);
+      text("FRIENDLY SHIP+1 (13PT)\nCAPACITY: "+(int)intFriendlysAlive, (width/2)-300, height-340);
       text("CANNON CAPACITY+5 (5PT)\nCAPACITY: "+(int)bulletCoolDownMax, (width/2)+300, height-340);
       //fuel, health, bullet damage
       //fuel
@@ -2996,11 +3327,11 @@ class Menu
         shootDamage+=1;
         noStroke();
       }
-      if (menuFlash<1&&mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-360&&mouseY<height-360+50&&points>16) {
+      if (menuFlash<1&&mousePressed&&mouseX>(width/2)-400&&mouseX<(width/2)-400+200&&mouseY>height-360&&mouseY<height-360+50&&points>12) {
         menuFlash=100;
         fill(menuFlash*2.55, menuFlash*2.55, menuFlash*2.55);
         menuFlash-=10;
-        points-=17;
+        points-=13;
         intFriendlysAlive+=1;
         noStroke();
       }
@@ -3103,8 +3434,8 @@ public void keyPressed()
       shootCool = shootCoolTime;
     }
     if (shootMode == 2 && (int)shootCool == 0) {
-       shootMode = 0;
-       shootCool = shootCoolTime;
+      shootMode = 0;
+      shootCool = shootCoolTime;
     }
   }
   if (keyCode == 'T') {
