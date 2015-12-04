@@ -302,6 +302,7 @@ public void draw()
           for (int j = 0; j < 10; j++) {
             debris.add(new Debris(robot.get(i).getX(), robot.get(i).getY()));
           }
+          break;
         }
         robot.get(i).reFuel();
         robot.get(i).control();
@@ -334,6 +335,7 @@ public void draw()
           for (int j = 0; j < 10; j++) {
             debris.add(new Debris(friendly.get(i).getX(), friendly.get(i).getY()));
           }
+          break;
         }
         friendly.get(i).reFuel();
         friendly.get(i).control();
