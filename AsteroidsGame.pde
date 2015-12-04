@@ -50,8 +50,8 @@ double shootDamage = 5; //5
 double robotShootDamage = 3+(currentLevel/5); //3
 int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
-int intRobots = 5;
-int intFriendlys = 4;
+int intRobots = 3;
+int intFriendlys = 1;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
 float addHealth = 0;
@@ -203,6 +203,7 @@ public void draw()
         coins.get(i).coinOp+=1;
         if (coins.get(i).coinOp>=800) {
           coins.remove(i);
+          continue;
         }
       }
       if (coins.get(i).reset == true) {
@@ -237,7 +238,9 @@ public void draw()
       robotbullet.get(i).move();
       robotbullet.get(i).show();
       if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
-        robot.get((int)Math.random()*robot.size()).missed+=1;
+        if (robot.size()>0) {
+          robot.get((int)Math.random()*robot.size()).missed+=2;
+        }
         robotbullet.remove(i);
       }
     }
@@ -245,7 +248,9 @@ public void draw()
       friendlybullet.get(i).move();
       friendlybullet.get(i).show();
       if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
-        friendly.get((int)Math.random()*friendly.size()).missed+=1;
+        if (friendly.size()>0) {
+          friendly.get((int)Math.random()*friendly.size()).missed+=2;
+        }
         friendlybullet.remove(i);
       }
     }
@@ -256,7 +261,7 @@ public void draw()
             robot.get(i).currentHealth-=shootDamage;
           }
           if (shootMode == 1) {
-            robot.get(i).currentHealth-=shootDamage/2;
+            robot.get(i).currentHealth-=shootDamage/3;
           }
           if (shootMode == 2) {
             robot.get(i).currentHealth-=shootDamage*10;
@@ -701,7 +706,9 @@ class SpaceShipControl
             shootCool = shootCoolTime;
           }
           if (shootMode == 1) {
-            bulletCoolDown-=0.7;
+            bulletCoolDown-=0.65;
+            bullet.add(new Bullet(ship));
+            bullet.add(new Bullet(ship));
             bullet.add(new Bullet(ship));
             bullet.add(new Bullet(ship));
             bullet.add(new Bullet(ship));
@@ -1398,7 +1405,7 @@ class RobotSpaceShip extends Floater
   public void reFuel() {
     noStroke();
     if (target>=friendly.size()+1) {
-      target = (int)(Math.random()*friendly.size()+1);
+      target = (int)(Math.random()*friendly.size());
     }
     int z = target;
     //for (int i = 0; i < friendly.size()-1; i++) {
@@ -1599,15 +1606,9 @@ class RobotSpaceShip extends Floater
 
   public void control() {
     if (!needHealth) {
-      if (missed > 0) {
-        if (missed > maxMissed) {
-          target = (int)(Math.random()*friendly.size()+1);
-          missed = 0;
-        }
-        missed-=0.01;
-      }
-      if (target>=friendly.size()+1) {
-        target = (int)(Math.random()*friendly.size()+1);
+
+      if (target>=friendly.size()) {
+        target = (int)(Math.random()*friendly.size());
       }
       int z = target;
       //for (int i = 0; i < friendly.size()-1; i++) {
@@ -1617,6 +1618,14 @@ class RobotSpaceShip extends Floater
       //  }
       //}
       if (friendly.size()>0&&target<=friendly.size()) {
+        if (missed > 0) {
+          if (missed > maxMissed) {
+            target = (int)(Math.random()*friendly.size());
+            missed = 0;
+          }
+          missed-=0.01;
+        }
+        z = target;
         int space = sp;
         int spaceOffset = spOffset;
         int rotateOffset = rotOffset;
