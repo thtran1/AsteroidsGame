@@ -1598,14 +1598,14 @@ class RobotSpaceShip extends Floater
   }
 
   public void control() {
-    if (missed > 0) {
-      if (missed > maxMissed) {
-        target = (int)(Math.random()*friendly.size());
-        missed = 0;
-      }
-      missed-=0.01;
-    }
     if (!needHealth) {
+      if (missed > 0) {
+        if (missed > maxMissed) {
+          target = (int)(Math.random()*friendly.size()+1);
+          missed = 0;
+        }
+        missed-=0.01;
+      }
       if (target>=friendly.size()+1) {
         target = (int)(Math.random()*friendly.size()+1);
       }
@@ -2082,14 +2082,14 @@ class FriendlySpaceShip extends Floater
   }
 
   public void control() {
-    if (missed > 0) {
-      if (missed > maxMissed) {
-        target = (int)(Math.random()*robot.size());
-        missed = 0;
-      }
-      missed-=0.01;
-    }
     if (!needHealth&&robot.size()>0) {
+      if (missed > 0) {
+        if (missed > maxMissed) {
+          target = (int)(Math.random()*robot.size());
+          missed = 0;
+        }
+        missed-=0.01;
+      }
       if (target>=robot.size()) {
         target = (int)(Math.random()*robot.size());
       }
