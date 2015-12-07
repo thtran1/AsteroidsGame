@@ -48,6 +48,7 @@ int shootCool = 0;
 int shootCoolTime = 5; //delay bullets
 double shootDamage = 5; //5
 double robotShootDamage = 3+(currentLevel/5); //3
+double friendlyShootDamage = shootDamage*(3/5);
 int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
 int intRobots = 3;
@@ -1782,8 +1783,10 @@ class FriendlyBullet extends Floater
 
 class FriendlySpaceShip extends Floater  
 {   
-  protected float currentHealth = 50+(currentLevel*2.5);
-  protected float maxHealth = 50+(currentLevel*2.5);
+  // float currentHealth = 50+(currentLevel*2.5);
+  //protected float maxHealth = 50+(currentLevel*2.5);
+  protected float currentHealth = health.maxHealth/2;
+  protected float maxHealth = health.maxHealth/2;
   protected double intX = screenSize;
   protected double intY = screenSize;
   protected int spaceShipSize = 1;
@@ -3122,6 +3125,7 @@ class Menu
         }
         intRobotsAlive=intRobots;
         intFriendlysAlive=intFriendlys;
+        friendlyShootDamage = shootDamage*(3/5);
         for (int i = 0; i < intRobotsAlive; i++) {
           robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
           rAX.add(i, (float)((areaX)+(robot.get(i).getX()-(screenSize/2))/screenSize));
