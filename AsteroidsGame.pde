@@ -36,7 +36,7 @@ BulletCool bulletcool = new BulletCool();
 areaMap map = new areaMap();
 helpButton help = new helpButton();
 Menu menu = new Menu();
-Star[] stars = new Star[screenSize/10];//your variable declarations here
+Star[] stars = new Star[screenSize/5];//your variable declarations here
 double gravity = 1.020;
 double hypergravity = 1.50;
 double maxTorque = 0.2; //0.2
@@ -47,7 +47,7 @@ int hyperSpeed = topSpeed*3;
 int bulletSpeed = 25;
 float bulletCoolDown = 10;
 float bulletCoolDownMax = 10;
-float bulletS = 2;
+float bulletS = 3;
 float bulletSpray = 0;
 int shootMode = 0;
 int shootCool = 0;
@@ -57,8 +57,8 @@ double robotShootDamage = 3+(currentLevel/5); //3
 double friendlyShootDamage = shootDamage*(0.6);
 int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
-int intRobots = 3;
-int intFriendlys = 1;
+int intRobots = 5;
+int intFriendlys = 3;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
 float addHealth = 0;
@@ -88,7 +88,7 @@ public void setup()
   rAY = new ArrayList <Float>();
   fAX = new ArrayList <Float>();
   fAY = new ArrayList <Float>();
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 5; i++) {
     asteroid.add(new Asteroid());
   }
   for (int i = 0; i < 0; i++) {
@@ -119,8 +119,23 @@ public void draw()
   if (gameStop) {
     menu.mainmenu();
   } else if (!gameStop) {
-    fill(0);
+    stroke(0);
+    noStroke();
+    if (!hyperspace) {
+      fill(0);
+    }
+    if (hyperspace) {
+      fill(0, 100-((abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()))/20));
+    }
     rect(-100, -100, screenSize+100, screenSize+100);
+    if (areaX==0||areaY==0||areaX==24||areaY==24) {
+      if (hyperspace) {
+        ship.setDirectionX(0);
+        ship.setDirectionY(0);
+        hyperspace = false;
+      }
+      hyperjump.hyperCool = hyperjump.hyperCoolAdd;
+    }
     for (int i = 0; i < stars.length; i++) {
       stars[i].show();
     }
@@ -199,17 +214,8 @@ public void draw()
       fuelcan.show();
       fuelcan.move();
     }
-    //}
-    //if (areaX == areaSize/2 && areaY == areaSize/2) {
-    //if (areaX == 1 && areaY == 1) {
     spacestation.show();
-    //robotstation.show();
-    //}
-    //if(areaX==23 && areaY==23) {
     robotstation.show();
-    //}
-    //fill(0, (abs(areaX-(areaSize/2))+abs(areaY-(areaSize/2)))*10);
-    //rect(-100, -100, screenSize+100, screenSize+100);
     for (int i = 0; i < coins.size (); i++) {
       if (coins.get(i).reset == false) {
         coins.get(i).show();
@@ -243,14 +249,14 @@ public void draw()
     for (int i = 0; i<bullet.size (); i++) {
       bullet.get(i).move();
       bullet.get(i).show();
-      if (abs(bullet.get(i).getX()-height/2)>=height*3||abs(bullet.get(i).getY()-height/2)>=height*3) {
+      if (bullet.get(i).dis<=0) {
         bullet.remove(i);
       }
     }
     for (int i = 0; i<robotbullet.size (); i++) {
       robotbullet.get(i).move();
       robotbullet.get(i).show();
-      if (abs(robotbullet.get(i).getX()-height/2)>=height*3||abs(robotbullet.get(i).getY()-height/2)>=height*3) {
+      if (robotbullet.get(i).dis<=0) {
         if (robot.size()>0) {
           robot.get((int)Math.random()*robot.size()).missed+=maxMissed*2;
         }
@@ -260,7 +266,7 @@ public void draw()
     for (int i = 0; i<friendlybullet.size (); i++) {
       friendlybullet.get(i).move();
       friendlybullet.get(i).show();
-      if (abs(friendlybullet.get(i).getX()-height/2)>=height*3||abs(friendlybullet.get(i).getY()-height/2)>=height*3) {
+      if (friendlybullet.get(i).dis<=0) {
         if (friendly.size()>0) {
           friendly.get((int)Math.random()*friendly.size()).missed+=maxMissed*2;
         }
@@ -838,10 +844,10 @@ class Bullet extends Floater
   protected double dRadians;
   protected float bulletSize = bulletS;
   protected float touched = 1;
+  protected float dis;
   public Bullet(SpaceShip x) {
     myCenterX = x.getX();
     myCenterY = x.getY();
-
     if (shootMode == 0) {
       myPointDirection = x.getPointDirection()+((Math.random()*8)-4);
       dRadians =myPointDirection*(Math.PI/180);
@@ -860,11 +866,12 @@ class Bullet extends Floater
       myDirectionX=bulletSpeed*1.5*Math.cos(dRadians) + x.getDirectionX() - ship.myDirectionX;
       myDirectionY=bulletSpeed*1.5*Math.sin(dRadians) + x.getDirectionY() - ship.myDirectionY;
     }
-
     myColor = color(255, 255, 0);
+    dis = 100;
   }
   public void show()
   {
+    dis-=0.1;
     noStroke();
     fill(myColor);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
@@ -1215,6 +1222,7 @@ class RobotBullet extends Floater
 {
   protected double dRadians;
   protected float bulletSize = bulletS;
+  protected float dis;
   public RobotBullet(int x, int y, int d, double dX, double dY) {
     myCenterX = x;
     myCenterY = y;
@@ -1223,9 +1231,11 @@ class RobotBullet extends Floater
     myDirectionX=bulletSpeed*Math.cos(dRadians) + dX - ship.getDirectionX();
     myDirectionY=bulletSpeed*Math.sin(dRadians) + dY - ship.getDirectionY();
     myColor = color(255, 255, 0);
+    dis = 100;
   }
   public void show()
   {
+    dis-=0.5;
     noStroke();
     fill(myColor);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
@@ -1394,7 +1404,7 @@ class RobotSpaceShip extends Floater
     }
     //change the x and y coordinates by myDirectionX and myDirectionY 
     myPointDirection+=nDegreesOfRotation; 
-    myPointDirection = myPointDirection/(grav*1.2);
+    myPointDirection = myPointDirection/(gravity*1.2);
     myCenterX += myDirectionX;    
     myCenterY += myDirectionY;
     myDirectionX = myDirectionX/grav;
@@ -1856,6 +1866,7 @@ class FriendlyBullet extends Floater
 {
   protected double dRadians;
   protected float bulletSize = bulletS;
+  protected float dis;
   public FriendlyBullet(int x, int y, int d, double dX, double dY) {
     myCenterX = x;
     myCenterY = y;
@@ -1864,9 +1875,11 @@ class FriendlyBullet extends Floater
     myDirectionX=bulletSpeed*Math.cos(dRadians) + dX - ship.getDirectionX();
     myDirectionY=bulletSpeed*Math.sin(dRadians) + dY - ship.getDirectionY();
     myColor = color(255, 255, 0);
+    dis = 100;
   }
   public void show()
   {
+    dis-=0.5;
     noStroke();
     fill(myColor);
     ellipse((int)myCenterX, (int)myCenterY, bulletSize, bulletSize);
@@ -2036,7 +2049,7 @@ class FriendlySpaceShip extends Floater
     }
     //change the x and y coordinates by myDirectionX and myDirectionY 
     myPointDirection+=nDegreesOfRotation; 
-    myPointDirection = myPointDirection/(grav*1.2);
+    myPointDirection = myPointDirection/(gravity*1.2);
     myCenterX += myDirectionX;    
     myCenterY += myDirectionY;
     myDirectionX = myDirectionX/grav;
@@ -2455,7 +2468,12 @@ class SpaceStation extends Floater
     translate((float)myCenterX, (float)myCenterY);
     //rect(-50*stationSize-1, -25*stationSize, 100*stationSize+2, 50*stationSize);
     //rect(-25*stationSize, -50*stationSize-1, 50*stationSize, 100*stationSize+2);
-    fill(150+addHealth, 150-addHealth/2, 150-addHealth/2);
+    if (areaX<3) {
+      fill(150-addHealth/2, 150+addHealth, 150-addHealth/2);
+    }
+    if (areaX>20) {
+      fill(150+addHealth, 150-addHealth/2, 150-addHealth/2);
+    }
     ellipse(0, 0, 100*stationSize, 100*stationSize);
     resetMatrix();
     myPointDirection+=speedRotation;
@@ -2642,6 +2660,8 @@ class Asteroid extends Floater
     myCenterX += myDirectionX;    
     myCenterY += myDirectionY;     
     myPointDirection +=speedRotation;
+    myCenterX-=ship.getDirectionX()/8;
+    myCenterY-=ship.getDirectionY()/8;
     //wrap around screen    
     if (myCenterX >width+screenSize)
     {   
@@ -2791,11 +2811,12 @@ abstract class Floater //Do NOT modify the Floater class! Make changes in the Sp
 
 class Star 
 {
-  private int starX, starY, starColor;
+  private float starX, starY;
+  private int starColor;
   private double starSize;
   public Star() {
-    starX = (int)(Math.random()*screenSize);
-    starY = (int)(Math.random()*screenSize);
+    starX = (int)(Math.random()*screenSize*2)-screenSize;
+    starY = (int)(Math.random()*screenSize*2)-screenSize;
     starColor = (int)(Math.random()*50)+200;
     starSize = Math.random()*5;
   }
@@ -2805,6 +2826,8 @@ class Star
     ellipse(starX, starY, (float)starSize, (float)starSize);
     starColor = (int)(Math.random()*50)+200;
     starSize = Math.random()*5;
+    starX-=(ship.getDirectionX()/16);
+    starY-=(ship.getDirectionY()/16);
   }
 }
 
@@ -2821,9 +2844,11 @@ class HyperJump extends Gui
   }
   public void interaction() {
     if (!hyperspace) {
+      titleColor = color(255);
       titleName = "Hyperspeed: Off";
     }
     if (hyperspace) {
+      titleColor = color(150, 150, 250);
       titleName = "Hyperspeed: On";
     }
     //NEW HYPERJUMP
@@ -2995,7 +3020,7 @@ class areaMap extends Gui
     textAlign(CENTER);
     text(titleName, screenSize+titleX, titleY);
     //rectangle
-    fill(0);
+    fill(0, 90);
     stroke(255);
     rect((float)(screenSize+9), rectY, rectSizeX+1, rectSizeX+1);
     //spacestation
@@ -3140,13 +3165,13 @@ abstract class Gui
   protected int titleX = (screenSize-screenSize)/2;
   protected int titleY;
   protected int rectSizeX;
-
+  protected color titleColor = color(255);
   public void show() {
     textSize(12);
     titleX = (width-height)/2;
     rectSizeX = width-height-19;
     //title
-    fill(255);
+    fill(titleColor);
     textAlign(CENTER);
     text(titleName, screenSize+titleX, titleY);
     //rectangle
@@ -3526,8 +3551,10 @@ class Menu
         for (int i = 0; i<robot.size (); i++) {
           robot.get(i).maxHealth += (currentLevel*2.5);
           robot.get(i).currentHealth = robot.get(i).maxHealth;
-          robot.get(i).setAreaX((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
-          robot.get(i).setAreaY((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+          //robot.get(i).setAreaX((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+          //robot.get(i).setAreaY((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
+          robot.get(i).setAreaX(23+0.5);
+          robot.get(i).setAreaY(23+0.5);
           robot.get(i).setX((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaX()-areaX))));
           robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
           //myCenterY=(float)((screenSize/2)+(screenSize*(robotAreaY-areaY)));
