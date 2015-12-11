@@ -1719,7 +1719,7 @@ class RobotSpaceShip extends Floater
   public void control() {
     if (!needHealth) {
       int z = target;
-      for (int i = 0; i < friendly.size ()-1; i++) {
+      for (int i = 0; i < friendly.size (); i++) {
         if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
           break;
@@ -2174,7 +2174,7 @@ class FriendlySpaceShip extends Floater
         target = (int)(Math.random()*robot.size());
       }
       int z = target;
-      for (int i = 0; i < robot.size ()-1; i++) {
+      for (int i = 0; i < robot.size (); i++) {
         if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
           break;
@@ -2267,16 +2267,15 @@ class FriendlySpaceShip extends Floater
         if (missed > maxMissed) {
           if (!defend) {
             //target = (int)(Math.random()*robot.size());
-            for (int i = 0; i < robot.size ()-1; i++) {
+            for (int i = 0; i < robot.size(); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
                 break;
               }
-              break;
             }
           }
           if (defend) {
-            for (int i = 0; i < robot.size ()-1; i++) {
+            for (int i = 0; i < robot.size(); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
                 break;
