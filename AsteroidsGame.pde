@@ -54,10 +54,10 @@ double robotShootDamage = 3+(currentLevel/5); //3
 double friendlyShootDamage = shootDamage*(0.6);
 int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
-int intRobots = 30;
-int intFriendlys = 30;
-//int intRobots = 5;
-//int intFriendlys = 3;
+//int intRobots = 30;
+//int intFriendlys = 30;
+int intRobots = 3;
+int intFriendlys = 1;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
 float addHealth = 0;
