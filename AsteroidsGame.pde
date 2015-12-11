@@ -1356,6 +1356,7 @@ class RobotSpaceShip extends Floater
   protected int expR, expG, expB;
   protected double missed, tSpeed, mTorque, grav;
   protected boolean hyper;
+  protected int z;
   RobotSpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -1415,6 +1416,7 @@ class RobotSpaceShip extends Floater
     mTorque = maxTorque;
     grav = gravity;
     hyper = false;
+    z = (int)(Math.random()*friendly.size());
   }
   public void explode() {
     noStroke();
@@ -1518,7 +1520,6 @@ class RobotSpaceShip extends Floater
     if (target>=friendly.size()) {
       target = (int)(Math.random()*friendly.size());
     }
-    int z = target;
     //for (int i = 0; i < friendly.size()-1; i++) {
     //  if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
     //    target = i;
@@ -1718,8 +1719,6 @@ class RobotSpaceShip extends Floater
 
   public void control() {
     if (!needHealth) {
-      int z = target;
-
       for (int i = 0; i < friendly.size (); i++) {
         if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
@@ -2021,6 +2020,7 @@ class FriendlySpaceShip extends Floater
   protected int expR, expG, expB;
   protected double missed, tSpeed, mTorque, grav;
   protected boolean hyper;
+  protected int z;
   FriendlySpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -2080,6 +2080,7 @@ class FriendlySpaceShip extends Floater
     mTorque = maxTorque;
     grav = gravity;
     hyper = false;
+    z = (int)(Math.random()*robot.size());
   }
   public void explode() {
     noStroke();
@@ -2172,8 +2173,6 @@ class FriendlySpaceShip extends Floater
     hyper = false;
     noStroke();
     if (needHealth&&robot.size()>0) {
-
-      int z = target;
       for (int i = 0; i < robot.size (); i++) {
         if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
@@ -2268,12 +2267,11 @@ class FriendlySpaceShip extends Floater
 
   public void control() {
     if (!needHealth&&robot.size()>0) {
-      int z = target;
       if (missed > 0) {
         if (missed > maxMissed) {
           if (!defend) {
             //target = (int)(Math.random()*robot.size());
-            for (int i = 0; i < robot.size(); i++) {
+            for (int i = 0; i < robot.size (); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
                 break;
@@ -2281,7 +2279,7 @@ class FriendlySpaceShip extends Floater
             }
           }
           if (defend) {
-            for (int i = 0; i < robot.size(); i++) {
+            for (int i = 0; i < robot.size (); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
                 break;
