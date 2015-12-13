@@ -101,7 +101,7 @@ public void setup()
     robot.get(i).setAreaY((int)(Math.random()*areaSize/2)+(areaSize/4)+0.5);
     robot.get(i).setX((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaX()-areaX))));
     robot.get(i).setY((int)((screenSize/2)+(screenSize*(robot.get(i).getAreaY()-areaY))));
-    robot.get(i).target = (int)(Math.random()*(friendly.size()+1));
+    robot.get(i).target = (int)(Math.random()*(friendly.size()));
   }
   for (int i = 0; i < 0; i++) {
     friendly.add(new FriendlySpaceShip(height/2, height/2));
@@ -1519,6 +1519,7 @@ class RobotSpaceShip extends Floater
     noStroke();
     if (target>=friendly.size()) {
       target = (int)(Math.random()*friendly.size());
+      z = target;
     }
     //for (int i = 0; i < friendly.size()-1; i++) {
     //  if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
@@ -1719,14 +1720,14 @@ class RobotSpaceShip extends Floater
 
   public void control() {
     if (!needHealth) {
+      if (target>=friendly.size()) {
+        target = (int)(Math.random()*friendly.size());
+        z = target;
+      }
       for (int i = 0; i < friendly.size (); i++) {
         if (dist((float)friendly.get(z).getX(), (float)friendly.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)friendly.get(i).getX(), (float)friendly.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
           target = i;
-          break;
         }
-      }
-      if (target>=friendly.size()) {
-        target = (int)(Math.random()*friendly.size());
       }
       //if (friendly.size()>0&&target<=friendly.size()) {
       //  if (missed > 0) {
@@ -2173,15 +2174,15 @@ class FriendlySpaceShip extends Floater
     hyper = false;
     noStroke();
     if (needHealth&&robot.size()>0) {
-      for (int i = 0; i < robot.size (); i++) {
-        if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
-          target = i;
-          break;
-        }
-      }
       if (target>=robot.size()) {
         target = (int)(Math.random()*robot.size());
       }
+      z = target;
+      for (int i = 0; i < robot.size (); i++) {
+        if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
+          target = i;
+        }
+      } 
       z = target;
       //myColor = color(250, 150, 150);
       if (robot.size()>0&&robot.size()>=target) {
@@ -2267,10 +2268,17 @@ class FriendlySpaceShip extends Floater
 
   public void control() {
     if (!needHealth&&robot.size()>0) {
+      if (target>=robot.size()) {
+        target = (int)(Math.random()*robot.size());
+      }
+      z = target;
       if (missed > 0) {
         if (missed > maxMissed) {
           if (!defend) {
-            //target = (int)(Math.random()*robot.size());
+            if (target>=robot.size()) {
+              target = (int)(Math.random()*robot.size());
+            }
+            z = target;
             for (int i = 0; i < robot.size (); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
@@ -2279,6 +2287,10 @@ class FriendlySpaceShip extends Floater
             }
           }
           if (defend) {
+            if (target>=robot.size()) {
+              target = (int)(Math.random()*robot.size());
+            }
+            z = target;
             for (int i = 0; i < robot.size (); i++) {
               if (dist((float)robot.get(z).getX(), (float)robot.get(z).getY(), (float)myCenterX, (float)myCenterY)>dist((float)robot.get(i).getX(), (float)robot.get(i).getY(), (float)myCenterX, (float)myCenterY)) {
                 target = i;
@@ -2289,9 +2301,6 @@ class FriendlySpaceShip extends Floater
           missed -= maxMissed;
         }
         missed-=0.01;
-      }
-      if (target>=robot.size()) {
-        target = (int)(Math.random()*robot.size());
       }
       z = target;
       if (defend&&robot.size()>0&&robot.size()>=target) {
