@@ -518,10 +518,16 @@ public void draw()
     text((int)frameRate, 50, 50);
     textX-=ship.getDirectionX();
     textY-=ship.getDirectionY();
+    fill(0, 30);
+    textAlign(CENTER, CENTER);
+    textSize(30);
+    text("'J' TO GO FAST \n \n 'M' FOR MAP \n \n 'F' TO SWITCH CANNON MODE \n \n 'L' TO SWITCH FRIENDLYS' MENTALITY", textX+20, textY+20);
+    text("GOOD LUCK LOL", textX+520, textY+520);
     fill(255);
     textSize(30);
-    text("'J' TO GO FAST \n 'M' FOR MAP", textX, textY);
-    if (dist(textX, textY, ship.getX(), ship.getY())>height*2) {
+    text("'J' TO GO FAST \n \n 'M' FOR MAP \n \n 'F' TO SWITCH CANNON MODE \n \n 'L' TO SWITCH FRIENDLYS' MENTALITY", textX, textY);
+    text("GOOD LUCK LOL", textX+500, textY+500);
+    if (dist(textX, textY, ship.getX(), ship.getY())>height) {
       textX = -10000000;
       textY = -10000000;
     }
