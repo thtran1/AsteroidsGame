@@ -82,6 +82,8 @@ boolean crazyMode = false;
 boolean hyperspace = false;
 float actualX = screenSize+(screenSize/2);
 float actualY = screenSize+(screenSize/2);
+float textX = screenSize/2;
+float textY = 200;
 public void setup() 
 {
   frameRate(60);
@@ -514,6 +516,15 @@ public void draw()
     fill(255);
     textSize(12);
     text((int)frameRate, 50, 50);
+    textX-=ship.getDirectionX();
+    textY-=ship.getDirectionY();
+    fill(255);
+    textSize(30);
+    text("'J' TO GO FAST \n 'M' FOR MAP", textX, textY);
+    if (dist(textX, textY, ship.getX(), ship.getY())>height*2) {
+      textX = -10000000;
+      textY = -10000000;
+    }
     ///////////////////////////////////////
     fill(50, 90);
     noStroke();
