@@ -3548,6 +3548,8 @@ class Menu
         }
         areaX = 1;
         areaY = 1;
+        actualX = screenSize+(screenSize/2);
+        actualY = screenSize+(screenSize/2);
         spacestation.setX(screenSize/2);
         spacestation.setY(screenSize/2);
         robotstation.setX(screenSize/2+(screenSize*22));
@@ -3575,7 +3577,7 @@ class Menu
           robot.get(i).currentHealth = robot.get(i).maxHealth;
         }
         for (int i = 0; i<friendly.size (); i++) {
-          friendly.get(i).maxHealth = 50;
+          friendly.get(i).maxHealth = health.maxHealth/2;
           friendly.get(i).currentHealth = friendly.get(i).maxHealth;
           friendly.get(i).target = (int)(Math.random()*robot.size());
         }
@@ -3736,6 +3738,8 @@ class Menu
         friendlyShootDamage = shootDamage*(0.6);
         areaX = 1;
         areaY = 1;
+        actualX = screenSize+(screenSize/2);
+        actualY = screenSize+(screenSize/2);
         spacestation.setX(screenSize/2);
         spacestation.setY(screenSize/2);
         robotstation.setX(screenSize/2+(screenSize*22));
