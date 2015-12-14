@@ -23,6 +23,7 @@ ArrayList <Bullet> bullet = new ArrayList <Bullet>();
 ArrayList <RobotBullet> robotbullet = new ArrayList <RobotBullet>();
 ArrayList <FriendlyBullet> friendlybullet = new ArrayList <FriendlyBullet>();
 ArrayList <Asteroid> asteroid;
+ArrayList <HyperFlare> hyperflare;
 ArrayList <Float> rAX, rAY, fAX, fAY;
 FuelCan fuelcan = new FuelCan();
 HyperJump hyperjump = new HyperJump();
@@ -41,8 +42,8 @@ double hypergravity = 1.50;
 double maxTorque = 0.2; //0.2
 double hyperTorque = maxTorque*80;
 int rotateSpeed = 1;
-int topSpeed = 10;
-int hyperSpeed = topSpeed*5;
+int topSpeed = 15;
+int hyperSpeed = topSpeed*4;
 int bulletSpeed = 20;
 float bulletCoolDown = 10;
 float bulletCoolDownMax = 10;
@@ -60,7 +61,7 @@ int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
 //int intFriendlys = 30;
 int intRobots = 5;
 int intFriendlys = 3;
-int intPlanets = 8;
+int intPlanets = 10;
 int intAsteroids = 10;
 float currentFuel = fuel.maxFuel;
 float addFuel = 0;
@@ -96,21 +97,22 @@ public void setup()
   planets = new ArrayList <Planet>();
   moons = new ArrayList <Moon>();
   asteroid = new ArrayList <Asteroid>();
+  hyperflare = new ArrayList <HyperFlare>();
   rAX = new ArrayList <Float>();
   rAY = new ArrayList <Float>();
   fAX = new ArrayList <Float>();
   fAY = new ArrayList <Float>();
   for (int i = 0; i < intPlanets; i++) {
     if (i == 0) {
-      planets.add(new Planet((float)(Math.random()*8)+4));
+      planets.add(new Planet((float)(Math.random()*intPlanets)+intPlanets/2));
       for (int j = 0; j < planets.get(i).moonNum; j++) {
-        moons.add(new Moon(planets.get(i)));
+        //moons.add(new Moon(planets.get(i)));
       }
     }
     if (i > 0) {
-      planets.add(new Planet(planets.get(i-1).spd+(float)(Math.random()*2)));
+      planets.add(new Planet(planets.get(i-1).spd-(float)(Math.random()*(1/intPlanets))));
       for (int j = 0; j < planets.get(i).moonNum; j++) {
-        moons.add(new Moon(planets.get(i)));
+        //moons.add(new Moon(planets.get(i)));
       }
     }
   }
@@ -147,7 +149,7 @@ public void draw()
   } else if (!gameStop) {
     fill(0);
     rect(0, 0, height, height);
-    stroke(150);  
+    stroke(150, 0, 0, 90);  
     strokeWeight(height);
     fill(0);
     rect(0-actualX, 0-actualY, height*areaSize+height*2, height*areaSize+height*2);
@@ -388,7 +390,7 @@ public void draw()
         }
       }
     }
-    for (int i = 0; i < robot.size (); i++) {
+    for (int i = 0; i < robot.size(); i++) {
       if (robot.get(i).dead == false) {
         if (robot.get(i).currentHealth<=0) {
           robot.get(i).dead = true;
@@ -521,12 +523,18 @@ public void draw()
       gameStop = true;
       menu.men = 3;
     }
+    for (int i = 0; i < hyperflare.size(); i++) {
+      hyperflare.get(i).show();
+      if (hyperflare.get(i).dis < 0) {
+        hyperflare.remove(i);
+      }
+    }
     fill(255);
     textSize(12);
     text((int)frameRate, 50, 50);
     //if (friendly.size()>0) {
-      //text(friendly.get(0).maxHealth, 50, 70);
-      //text((int)friendlyShootDamage, 50, 90);
+    //text(friendly.get(0).maxHealth, 50, 70);
+    //text((int)friendlyShootDamage, 50, 90);
     //}
     textX-=ship.getDirectionX();
     textY-=ship.getDirectionY();
@@ -742,6 +750,8 @@ class SpaceShipControl
   float mX, mY;
   protected double radDir =-Math.PI/2;
   public void control() {
+
+    hyperflare.add(new HyperFlare(ship.lineX, ship.lineY));
     noStroke();
     if (!hyperspace) {
       if (wPressed && (abs((float)ship.myDirectionX)+abs((float)ship.myDirectionY)) < topSpeed && currentFuel > 0) {
@@ -1031,7 +1041,40 @@ class Bullet extends Floater
     return myPointDirection;
   }
 }
-
+class HyperFlare
+{
+  protected double myCenterX, myCenterY, secondX, secondY, dis;
+  HyperFlare(double x, double y) {
+    myCenterX = (Math.random()*height*4)-height*2;
+    myCenterY = (Math.random()*height*4)-height*2;
+    secondX = x;
+    secondY = y;
+    dis = 5*(abs((float)x)+abs((float)y));
+  }
+  public void show() {
+    myCenterX-=ship.getDirectionX();
+    myCenterY-=ship.getDirectionY();
+    secondX=ship.getDirectionX();
+    secondY=ship.getDirectionY();
+    dis-=50/(abs((float)ship.getDirectionX())+abs((float)ship.getDirectionY()));
+    translate((float)myCenterX, (float)myCenterY);
+    stroke(255, (float)dis);
+    line(0, 0, (float)secondX*3, (float)secondY*3);
+    resetMatrix();
+  }
+  public void setX(int x) {
+    myCenterX = x;
+  }  
+  public int getX() {
+    return (int)myCenterX;
+  }   
+  public void setY(int y) {
+    myCenterY = y;
+  }   
+  public int getY() {
+    return (int)myCenterY;
+  }
+}
 class SpaceShip extends Floater  
 {   
   protected double intX = screenSize;
@@ -1040,6 +1083,7 @@ class SpaceShip extends Floater
   protected boolean dead = false;
   protected double explodeSize, explodeOp;
   protected int expR, expG, expB;
+  protected double lineX, lineY;
   SpaceShip(int x, int y) {
     corners = 15;
     xCorners = new int[corners];
@@ -1126,6 +1170,8 @@ class SpaceShip extends Floater
     } 
     actualX += myDirectionX;
     actualY += myDirectionY;
+    lineX = myDirectionX;
+    lineY = myDirectionY;
     //wrap around screen    
     if (actualX>height*areaSize+height) {
       health.currentHealth-=abs((float)ship.getDirectionX());
@@ -2656,7 +2702,7 @@ class FuelCan extends Floater
 class Asteroid extends Floater
 {
   protected double speedRotation; 
-  protected int asteroidSize = (int)(Math.random()*100)+50;
+  protected int asteroidSize = (int)(Math.random()*50)+25;
   Asteroid() {
     corners = 8;
     xCorners = new int[corners];
@@ -2724,7 +2770,7 @@ class Asteroid extends Floater
       myCenterY = height+screenSize;
     }
     noStroke();
-    fill(0, 50);
+    fill(0, 10);
     double dRadians = myPointDirection*(Math.PI/180);                 
     int xRotatedTranslated, yRotatedTranslated;    
     beginShape();         
@@ -2871,10 +2917,8 @@ class Planet
     cY=(float)(Math.random()*height*areaSize/(spd/1.5));
   }
   public void show() {
-    fill(0, 0, 0, 20);
-    for (float i = 1; i < 1.1; i+=0.025) {
-      ellipse(cX, cY, size*i, size*i);
-    }
+    fill(0, 20);
+    ellipse(cX, cY, size*1.1, size*1.1);
     fill(pR, pG, pB);
     ellipse(cX, cY, size, size);
     cX-=(ship.getDirectionX()/spd);
@@ -2904,10 +2948,8 @@ class Moon
     translate(pX, pY);
     rotate(rot);
     rot+=rotspd;
-    fill(0, 10);
-    for (float i = 1; i < 1.5; i+=0.05) {
-      ellipse(cX, cX, size*i, size*i);
-    }
+    fill(0, 20);
+    ellipse(cX, cX, size*1.1, size*1.1);
     fill(mR, mG, mB);
     ellipse(cX, cX, size, size);
     pX-=(ship.getDirectionX()/spd);
@@ -3599,14 +3641,14 @@ class Menu
         intFriendlysAlive=intFriendlys;
         for (int i = 0; i < intRobotsAlive; i++) {
           //robot.add(new RobotSpaceShip(screenSize/2+((int)(Math.random()*areaSize)-(areaSize/2))*screenSize, ((int)(Math.random()*areaSize)-(areaSize/2))*screenSize));
-          robot.add(new RobotSpaceShip((height/2)+(height*22), (height/2)+(height*22)));
+          robot.add(new RobotSpaceShip((height*22)-(int)(Math.random()*height*2), (height*22)-(int)(Math.random()*height*2)));
           rAX.add(i, (float)((areaX)+(robot.get(i).rActualX-(screenSize/2))/screenSize));
           rAY.add(i, (float)((areaY)+(robot.get(i).rActualY-(screenSize/2))/screenSize));
           //rAY.add(i, (float)23);
           //rAY.add(i, (float)23);
         }
         for (int i = 0; i < intFriendlysAlive; i++) {
-          friendly.add(new FriendlySpaceShip(height/2, height/2));
+          friendly.add(new FriendlySpaceShip((int)(Math.random()*height), (int)(Math.random()*height)));
           fAX.add(i, (float)((areaX)+(friendly.get(i).fActualX-(screenSize/2))/screenSize));
           fAY.add(i, (float)((areaY)+(friendly.get(i).fActualY-(screenSize/2))/screenSize));
           //fAX.add(i, (float)1);
