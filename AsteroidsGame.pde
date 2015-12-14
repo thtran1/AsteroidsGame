@@ -56,10 +56,10 @@ double robotShootDamage = 3+(currentLevel/5); //3
 double friendlyShootDamage = shootDamage*(0.6);
 int maxMissed = 5;
 int robotsAlive, intRobotsAlive, friendlysAlive, intFriendlysAlive;
-int intRobots = 30;
-int intFriendlys = 30;
-//int intRobots = 5;
-//int intFriendlys = 3;
+//int intRobots = 30;
+//int intFriendlys = 30;
+int intRobots = 5;
+int intFriendlys = 3;
 int intPlanets = 8;
 int intAsteroids = 10;
 float currentFuel = fuel.maxFuel;
@@ -524,10 +524,10 @@ public void draw()
     fill(255);
     textSize(12);
     text((int)frameRate, 50, 50);
-    if (friendly.size()>0) {
-      text(friendly.get(0).maxHealth, 50, 70);
-      text((int)friendlyShootDamage, 50, 90);
-    }
+    //if (friendly.size()>0) {
+      //text(friendly.get(0).maxHealth, 50, 70);
+      //text((int)friendlyShootDamage, 50, 90);
+    //}
     textX-=ship.getDirectionX();
     textY-=ship.getDirectionY();
     fill(0, 30);
